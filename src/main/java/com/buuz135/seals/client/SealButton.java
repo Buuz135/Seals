@@ -52,7 +52,7 @@ public class SealButton extends Widget {
             GlStateManager.color4f(SELECTED.getRed()/255f, SELECTED.getGreen()/255f, SELECTED.getBlue()/255f, this.alpha);
         }
         this.blit(this.x, this.y, 24, 23, 22, 22);
-        info.getIcon().drawIcon(Minecraft.getInstance().currentScreen, x,y);
+        if (info.getIcon() != null) info.getIcon().drawIcon(Minecraft.getInstance().currentScreen, x,y);
         if (isHovered()) {
             List<String> tooltip = new ArrayList<>();
             tooltip.add(TextFormatting.LIGHT_PURPLE + new TranslationTextComponent("seal." + info.getSealLangKey()).getFormattedText());
