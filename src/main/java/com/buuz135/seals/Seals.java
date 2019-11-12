@@ -10,6 +10,7 @@ import com.buuz135.seals.storage.SealWorldStorage;
 import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.advancements.AdvancementsScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -20,6 +21,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -121,26 +123,32 @@ public class Seals {
     }
 
     @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onGuiOpen(GuiScreenEvent.InitGuiEvent.Post event) {
         if (event.getGui() instanceof AdvancementsScreen) {
-            AdvancementsScreen screen = (AdvancementsScreen) event.getGui();
+            List<SealInfo> seals = new ArrayList<>(SEAL_MANAGER.getSeals());
+            seals.removeIf(sealInfo -> sealInfo.isInvisible() && !sealInfo.hasAchievedSealClient(Minecraft.getInstance().player));
+            Screen screen = event.getGui();
             int guiLeft = (screen.width - 252) / 2;
             int guiTop = (screen.height - 140) / 2;
+            for (int i = 0; i < seals.size(); i++) {
+                event.addWidget(new SealButton(seals.get(i), guiLeft - 26 * ((i / 6 + 1)), guiTop + 24 * (i % 6) - 6));
+            }
+        } else if (event.getGui().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
             List<SealInfo> seals = new ArrayList<>(SEAL_MANAGER.getSeals());
             seals.removeIf(sealInfo -> sealInfo.isInvisible() && !sealInfo.hasAchievedSealClient(Minecraft.getInstance().player));
             for (int i = 0; i < seals.size(); i++) {
-                event.addWidget(new SealButton(seals.get(i), guiLeft - 26 * ((i / 6 + 1)), guiTop + 24 * (i % 6) - 6));
+                event.addWidget(new SealButton(seals.get(i), 5, 10 + 24 * i));
             }
         }
     }
 
     @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onRender(GuiScreenEvent.DrawScreenEvent.Post event) {
-        if (event.getGui() instanceof AdvancementsScreen) {
-            AdvancementsScreen screen = (AdvancementsScreen) event.getGui();
-            screen.buttons.stream().forEach(widget -> widget.render(event.getMouseX(), event.getMouseY(), event.getRenderPartialTicks()));
+        if (event.getGui() instanceof AdvancementsScreen || event.getGui().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
+            Screen screen = event.getGui();
+            screen.buttons.stream().filter(widget -> widget instanceof SealButton).forEach(widget -> widget.render(event.getMouseX(), event.getMouseY(), event.getRenderPartialTicks()));
         }
     }
 
