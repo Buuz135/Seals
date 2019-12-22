@@ -5,6 +5,7 @@ import com.buuz135.seals.Seals;
 import com.buuz135.seals.network.SealRequestMessage;
 import com.buuz135.seals.storage.ClientSealWorldStorage;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -43,13 +44,13 @@ public class SealButton extends Widget {
         Minecraft minecraft = Minecraft.getInstance();
         FontRenderer fontrenderer = minecraft.fontRenderer;
         minecraft.getTextureManager().bindTexture(WIDGETS_LOCATION);
-        GlStateManager.color4f(1.0F, 1.0F, 1.0F, this.alpha);
-        GlStateManager.enableBlend();
-        GlStateManager.disableLighting();
-        GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, this.alpha);
+        RenderSystem.enableBlend();
+        RenderSystem.disableLighting();
+        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         if (ClientSealWorldStorage.SEALS.getClientSeals().containsKey(Minecraft.getInstance().player.getUniqueID().toString()) && ClientSealWorldStorage.SEALS.getClientSeals().get(Minecraft.getInstance().player.getUniqueID().toString()).equals(info.getSealID())){
-            GlStateManager.color4f(SELECTED.getRed()/255f, SELECTED.getGreen()/255f, SELECTED.getBlue()/255f, this.alpha);
+            RenderSystem.color4f(SELECTED.getRed()/255f, SELECTED.getGreen()/255f, SELECTED.getBlue()/255f, this.alpha);
         }
         this.blit(this.x, this.y, 24, 23, 22, 22);
         if (info.getIcon() != null) info.getIcon().drawIcon(Minecraft.getInstance().currentScreen, x,y);
