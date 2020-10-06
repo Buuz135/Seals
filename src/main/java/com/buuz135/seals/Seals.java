@@ -148,7 +148,7 @@ public class Seals {
     public void onRender(GuiScreenEvent.DrawScreenEvent.Post event) {
         if (event.getGui() instanceof AdvancementsScreen || event.getGui().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
             Screen screen = event.getGui();
-            screen.buttons.stream().filter(widget -> widget instanceof SealButton).forEach(widget -> widget.render(event.getMouseX(), event.getMouseY(), event.getRenderPartialTicks()));
+            screen.buttons.stream().filter(widget -> widget instanceof SealButton).forEach(widget -> widget.render(event.getMatrixStack(), event.getMouseX(), event.getMouseY(), event.getRenderPartialTicks()));
         }
     }
 

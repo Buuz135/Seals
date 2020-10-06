@@ -7,6 +7,7 @@ import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.entity.PlayerRenderer;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
@@ -21,12 +22,13 @@ public class SealPlayerRenderer extends PlayerRenderer {
     }
 
     @Override
-    protected void func_225629_a_(AbstractClientPlayerEntity entity, String p_225629_2_, MatrixStack matrixStack, IRenderTypeBuffer p_225629_4_, int p_225629_5_) {
-        if (this.renderManager.func_229099_b_(entity) < 1000.0D && ClientSealWorldStorage.SEALS.getClientSeals().containsKey(entity.getUniqueID().toString()) && Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUniqueID().toString())) != null){
-            super.func_225629_a_(entity, TextFormatting.LIGHT_PURPLE + "" + TextFormatting.ITALIC + new TranslationTextComponent("seal." + Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUniqueID().toString())).getSealLangKey()).getFormattedText(), matrixStack, p_225629_4_, 64);
-            matrixStack.func_227861_a_(0.0D, (double)(9.0F * 1.15F * 0.025F), 0.0D);
+    protected void renderName(AbstractClientPlayerEntity entity, ITextComponent displayNameIn, MatrixStack matrixStack, IRenderTypeBuffer buffer, int packedLightIn) {
+        if (this.renderManager.squareDistanceTo(entity) < 1000.0D && ClientSealWorldStorage.SEALS.getClientSeals().containsKey(entity.getUniqueID().toString()) && Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUniqueID().toString())) != null) {
+            super.renderName(entity, new TranslationTextComponent("seal." + Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUniqueID().toString())).getSealLangKey()).mergeStyle(TextFormatting.LIGHT_PURPLE, TextFormatting.ITALIC), matrixStack, buffer, packedLightIn);
+            matrixStack.translate(0.0D, (double) (9.0F * 1.15F * 0.025F), 0.0D);
         }
-        super.func_225629_a_(entity, p_225629_2_, matrixStack, p_225629_4_, p_225629_5_);
-        matrixStack.func_227861_a_(0.0D, -(double)(9.0F * 1.15F * 0.025F), 0.0D);
+        super.renderName(entity, displayNameIn, matrixStack, buffer, packedLightIn);
+        matrixStack.translate(0.0D, -(double) (9.0F * 1.15F * 0.025F), 0.0D);
     }
+
 }
