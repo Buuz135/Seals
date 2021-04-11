@@ -1,15 +1,18 @@
 buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = "https://repo.spongepowered.org/maven/" }
         jcenter()
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
 
 version = "1.16.3-${modVersion}"
 group = modGroup
@@ -32,6 +35,7 @@ minecraft {
     // These can be tweaked, removed, or duplicated as needed.
     runs {
         client {
+            arg "-mixin.config=seals.mixins.json"
             workingDirectory project.file('run')
 
             // Recommended logging data for a userdev environment
@@ -48,6 +52,7 @@ minecraft {
         }
 
         server {
+            arg "-mixin.config=seals.mixins.json"
             workingDirectory project.file('run')
 
             // Recommended logging data for a userdev environment
@@ -88,6 +93,9 @@ repositories {
     jcenter()
 }
 
+mixin {
+    add sourceSets.main, "seals.refmap.json"
+}
 
 dependencies {
     // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
@@ -106,6 +114,7 @@ jar {
                     "Implementation-Vendor" :"Buuz135",
                     "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
                     "ModSide": "BOTH",
+                    "MixinConfigs": "seals.mixins.json"
         ],)
 
     }

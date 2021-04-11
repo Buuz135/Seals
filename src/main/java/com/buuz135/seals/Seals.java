@@ -1,7 +1,6 @@
 package com.buuz135.seals;
 
 import com.buuz135.seals.client.SealButton;
-import com.buuz135.seals.client.SealPlayerRenderer;
 import com.buuz135.seals.config.JSONConfigLoader;
 import com.buuz135.seals.config.SealManager;
 import com.buuz135.seals.network.ClientSyncSealsMessage;
@@ -73,13 +72,15 @@ public class Seals {
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
         new JSONConfigLoader();
-        NETWORK.registerMessage(0, ClientSyncSealsMessage.class, ClientSyncSealsMessage::toBytes, packetBuffer -> new ClientSyncSealsMessage().fromBytes(packetBuffer),  ClientSyncSealsMessage::handle);
-        NETWORK.registerMessage(1, SealRequestMessage.class, SealRequestMessage::toBytes, packetBuffer -> new SealRequestMessage().fromBytes(packetBuffer),  SealRequestMessage::handle);
-        try {
-            PATREONS.addAll(getPlayers(new URL("https://raw.githubusercontent.com/Buuz135/Industrial-Foregoing/master/contributors.json")));
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+        NETWORK.registerMessage(0, ClientSyncSealsMessage.class, ClientSyncSealsMessage::toBytes, packetBuffer -> new ClientSyncSealsMessage().fromBytes(packetBuffer), ClientSyncSealsMessage::handle);
+        NETWORK.registerMessage(1, SealRequestMessage.class, SealRequestMessage::toBytes, packetBuffer -> new SealRequestMessage().fromBytes(packetBuffer), SealRequestMessage::handle);
+        new Thread(() -> {
+            try {
+                PATREONS.addAll(getPlayers(new URL("https://raw.githubusercontent.com/Buuz135/Industrial-Foregoing/master/contributors.json")));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void setup(final FMLCommonSetupEvent event) {
@@ -88,17 +89,9 @@ public class Seals {
 
 
     private void doClientStuff(final FMLClientSetupEvent event) {
-        // do something that can only be done on the client
-        replacePlayerRenderer();
         ClientAdvancementManager advancementManager = new ClientAdvancementManager(Minecraft.getInstance());
     }
 
-    @OnlyIn(Dist.CLIENT)
-    private void replacePlayerRenderer() {
-        Minecraft.getInstance().getRenderManager().playerRenderer = new SealPlayerRenderer(Minecraft.getInstance().getRenderManager());
-        Minecraft.getInstance().getRenderManager().skinMap.put("default", Minecraft.getInstance().getRenderManager().playerRenderer);
-        Minecraft.getInstance().getRenderManager().skinMap.put("slim", new SealPlayerRenderer(Minecraft.getInstance().getRenderManager(), true));
-    }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
 
