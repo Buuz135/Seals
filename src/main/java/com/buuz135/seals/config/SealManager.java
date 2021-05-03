@@ -47,7 +47,7 @@ public class SealManager {
                 new ResourceLocation("minecraft:husbandry/bred_all_animals"),
                 new ResourceLocation("minecraft:husbandry/complete_catalogue"),
                 new ResourceLocation("minecraft:husbandry/balanced_diet"),
-                new ResourceLocation("minecraft:husbandry/break_diamond_hoe"),
+                new ResourceLocation("minecraft:husbandry/obtain_netherite_hoe"),
                 new ResourceLocation("minecraft:story/cure_zombie_villager")
         });
         sealInfo.setIcon(new ItemStackIcon(Items.EMERALD.getRegistryName()));
