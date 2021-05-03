@@ -27,13 +27,15 @@ public class SealButton extends Widget {
     private static Color COMPLETED = new Color(0x00ff15);
 
     private SealInfo info;
+    private boolean left;
 
-    public SealButton(SealInfo info, int xIn, int yIn) {
+    public SealButton(SealInfo info, int xIn, int yIn, boolean left) {
         super(xIn, yIn, 22, 22, new StringTextComponent(""));
         this.info = info;
         this.width = 22;
         this.height = 22;
         this.active = true;
+        this.left = left;
     }
 
     @Override
@@ -72,7 +74,7 @@ public class SealButton extends Widget {
                 }
             }
             stack.translate(0, 0, 300);
-            minecraft.currentScreen.func_243308_b(stack, tooltip.stream().map(StringTextComponent::new).collect(Collectors.toList()), x + 18, y + (tooltip.size() / 2) + fontrenderer.FONT_HEIGHT);
+            minecraft.currentScreen.func_243308_b(stack, tooltip.stream().map(StringTextComponent::new).collect(Collectors.toList()), left ? x + 18 : x + 7, y + (tooltip.size() / 2) + fontrenderer.FONT_HEIGHT);
             stack.translate(0, 0, -300);
         }
     }

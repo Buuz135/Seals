@@ -8,11 +8,15 @@ buildscript {
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
         classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
+        classpath "com.wynprice.cursemaven:CurseMaven:2.1.1"
     }
 }
-
+plugins {
+    id "com.wynprice.cursemaven" version "2.1.1"
+}
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
+
 
 version = "1.16.3-${modVersion}"
 group = modGroup
@@ -91,6 +95,9 @@ minecraft {
 repositories {
     mavenCentral()
     jcenter()
+    maven {
+        url = "https://www.cursemaven.com"
+    }
 }
 
 mixin {
@@ -102,6 +109,7 @@ dependencies {
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft 'net.minecraftforge:forge:1.16.3-34.1.0'
+    compile fg.deobf("curse.maven:better-advancements-272515:3066764")
 }
 
 jar {
