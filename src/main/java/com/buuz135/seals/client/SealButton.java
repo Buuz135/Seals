@@ -2,7 +2,6 @@ package com.buuz135.seals.client;
 
 import com.buuz135.seals.Seals;
 import com.buuz135.seals.datapack.SealInfo;
-import com.buuz135.seals.mixin.ClientAdvancementsAccessor;
 import com.buuz135.seals.network.SealRequestMessage;
 import com.buuz135.seals.storage.ClientSealWorldStorage;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -65,12 +64,11 @@ public class SealButton extends Button {
             List<String> tooltip = new ArrayList<>();
             tooltip.add(ChatFormatting.LIGHT_PURPLE + Component.translatable("seal." + info.getSealLangKey()).getString());
             var clientAdvancements = minecraft.player.connection.getAdvancements();
-            var advAccessor = (ClientAdvancementsAccessor) clientAdvancements;
             for (ResourceLocation requisite : info.getRequisites()) {
                 Advancement advancement = minecraft.player.connection.getAdvancements().getAdvancements().get(requisite);
                 if (advancement != null) {
                     boolean completed = false;
-                    if (advAccessor.getProgress().containsKey(advancement) && advAccessor.getProgress().get(advancement).isDone()) {
+                    if (clientAdvancements.progress.containsKey(advancement) && clientAdvancements.progress.get(advancement).isDone()) {
                         completed = true;
                     }
                     tooltip.add(ChatFormatting.GOLD + "- " + (completed ? ChatFormatting.GREEN : ChatFormatting.RED) + advancement.getDisplay().getTitle().getString());
