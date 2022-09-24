@@ -1,6 +1,7 @@
 package com.buuz135.seals.client.icon;
 
-import net.minecraft.client.gui.screen.Screen;
+
+import net.minecraft.client.gui.screens.Screen;
 
 public interface IIcon {
 

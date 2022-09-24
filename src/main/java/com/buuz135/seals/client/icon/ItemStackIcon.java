@@ -2,10 +2,9 @@ package com.buuz135.seals.client.icon;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class ItemStackIcon implements IIcon {
@@ -23,9 +22,13 @@ public class ItemStackIcon implements IIcon {
 
     @Override
     public void drawIcon(Screen screen, int posX, int posY) {
-        RenderHelper.setupGui3DDiffuseLighting();
+        //RenderHelper.setupGui3DDiffuseLighting();
         RenderSystem.enableDepthTest();
-        Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(new ItemStack(ForgeRegistries.ITEMS.getValue(stack)), posX + 3, posY +3);
-        RenderHelper.disableStandardItemLighting();
+        Minecraft.getInstance().getItemRenderer().renderGuiItem(new ItemStack(ForgeRegistries.ITEMS.getValue(stack)), posX + 3, posY + 3);
+        //RenderHelper.disableStandardItemLighting();
+    }
+
+    public ResourceLocation getStack() {
+        return stack;
     }
 }

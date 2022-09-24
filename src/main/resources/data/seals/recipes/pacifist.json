@@ -1,0 +1,17 @@
+{
+  "lang_key": "pacifist",
+  "requisites": [
+    "minecraft:husbandry/bred_all_animals",
+    "minecraft:husbandry/complete_catalogue",
+    "minecraft:husbandry/balanced_diet",
+    "minecraft:story/cure_zombie_villager"
+  ],
+  "icon": {
+    "type": "item",
+    "value": {
+      "stack": "minecraft:emerald"
+    }
+  },
+  "invisible": false,
+  "type": "seals:seal"
+}

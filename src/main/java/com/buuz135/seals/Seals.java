@@ -1,37 +1,40 @@
 package com.buuz135.seals;
 
 import com.buuz135.seals.client.SealButton;
-import com.buuz135.seals.config.JSONConfigLoader;
 import com.buuz135.seals.config.SealManager;
+import com.buuz135.seals.datapack.SealInfo;
+import com.buuz135.seals.datapack.SealInfoSerializer;
 import com.buuz135.seals.network.ClientSyncSealsMessage;
 import com.buuz135.seals.network.SealRequestMessage;
 import com.buuz135.seals.storage.SealWorldStorage;
 import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.advancements.AdvancementsScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.multiplayer.ClientAdvancementManager;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.client.event.RecipesUpdatedEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,6 +46,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("seals")
@@ -59,19 +64,19 @@ public class Seals {
     private static final Logger LOGGER = LogManager.getLogger();
     public static final List<UUID> PATREONS = new ArrayList<>();
 
+    public static DeferredRegister<RecipeSerializer<?>> RECIPE_SER = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, "seals");
+    public static final RegistryObject<SealInfoSerializer> EMOJI_RECIPE_SERIALIZER = RECIPE_SER.register("seal", SealInfoSerializer::new);
+
+    public static DeferredRegister<RecipeType<?>> RECIPE_TYPE = DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, "seals");
+    public static final RegistryObject<RecipeType<SealInfo>> SEAL_RECIPE_TYPE = RECIPE_TYPE.register("seal", () -> RecipeType.simple(new ResourceLocation("seals", "seal")));
+
     public Seals() {
-        // Register the setup method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        // Register the enqueueIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
-        // Register the processIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
-        // Register the doClientStuff method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+        RECIPE_SER.register(FMLJavaModLoadingContext.get().getModEventBus());
+        RECIPE_TYPE.register(FMLJavaModLoadingContext.get().getModEventBus());
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
-        new JSONConfigLoader();
         NETWORK.registerMessage(0, ClientSyncSealsMessage.class, ClientSyncSealsMessage::toBytes, packetBuffer -> new ClientSyncSealsMessage().fromBytes(packetBuffer), ClientSyncSealsMessage::handle);
         NETWORK.registerMessage(1, SealRequestMessage.class, SealRequestMessage::toBytes, packetBuffer -> new SealRequestMessage().fromBytes(packetBuffer), SealRequestMessage::handle);
         new Thread(() -> {
@@ -81,65 +86,52 @@ public class Seals {
                 e.printStackTrace();
             }
         }).start();
-    }
-
-    private void setup(final FMLCommonSetupEvent event) {
 
     }
-
 
     private void doClientStuff(final FMLClientSetupEvent event) {
-        ClientAdvancementManager advancementManager = new ClientAdvancementManager(Minecraft.getInstance());
+        //ClientAdvancements advancementManager = new ClientAdvancements(Minecraft.getInstance());
     }
 
 
-    private void enqueueIMC(final InterModEnqueueEvent event) {
-
-    }
-
-    private void processIMC(final InterModProcessEvent event) {
-
-    }
-
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
-    public void onServerStarting(FMLServerStartingEvent event) {
-        // do something when the server starts
+    public void onRecipesUpdated(RecipesUpdatedEvent event) {
+        SEAL_MANAGER.setSeals(event.getRecipeManager().getAllRecipesFor(SEAL_RECIPE_TYPE.get()));
     }
 
     @SubscribeEvent
-    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event){
-        World world = event.getPlayer().getEntityWorld();
-        if (world instanceof ServerWorld && event.getPlayer() instanceof ServerPlayerEntity){
-            NETWORK.sendTo(new ClientSyncSealsMessage(SealWorldStorage.get((ServerWorld) world).serializeNBT()), ((ServerPlayerEntity) event.getPlayer()).connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        Level world = event.getEntity().getLevel();
+        if (world instanceof ServerLevel && event.getEntity() instanceof ServerPlayer) {
+            NETWORK.sendTo(new ClientSyncSealsMessage(SealWorldStorage.get((ServerLevel) world).save(new CompoundTag())), ((ServerPlayer) event.getEntity()).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
         }
     }
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onGuiOpen(GuiScreenEvent.InitGuiEvent.Post event) {
-        if (event.getGui() instanceof AdvancementsScreen) {
+    public void onGuiOpen(ScreenEvent.Init.Post event) {
+        if (event.getScreen() instanceof AdvancementsScreen) {
             List<SealInfo> seals = new ArrayList<>(SEAL_MANAGER.getSeals());
             seals.removeIf(sealInfo -> sealInfo.isInvisible() && !sealInfo.hasAchievedSealClient(Minecraft.getInstance().player));
-            Screen screen = event.getGui();
+            Screen screen = event.getScreen();
             int guiLeft = (screen.width - 252) / 2;
             int guiTop = (screen.height - 140) / 2;
             for (int i = 0; i < seals.size(); i++) {
-                event.addWidget(new SealButton(seals.get(i), guiLeft - 26 * ((i / 6 + 1)), guiTop + 24 * (i % 6) - 6, true));
+                event.addListener(new SealButton(seals.get(i), guiLeft - 26 * ((i / 6 + 1)), guiTop + 24 * (i % 6) - 6, true));
             }
-        } else if (event.getGui().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
+        } else if (event.getScreen().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
             List<SealInfo> seals = new ArrayList<>(SEAL_MANAGER.getSeals());
             seals.removeIf(sealInfo -> sealInfo.isInvisible() && !sealInfo.hasAchievedSealClient(Minecraft.getInstance().player));
-            Screen screen = event.getGui();
+            Screen screen = event.getScreen();
             int height = screen.height;
             int width = screen.width;
             int vertical = 0;
             for (int i = 0; i < seals.size(); i++) {
                 int y = 10 + 24 * i;
                 if (y > height - 40) {
-                    event.addWidget(new SealButton(seals.get(i), width - 26, 10 + 24 * (i - vertical), false));
+                    event.addListener(new SealButton(seals.get(i), width - 26, 10 + 24 * (i - vertical), false));
                 } else {
-                    event.addWidget(new SealButton(seals.get(i), 5, 10 + 24 * i, true));
+                    event.addListener(new SealButton(seals.get(i), 5, 10 + 24 * i, true));
                     ++vertical;
                 }
 
@@ -149,10 +141,10 @@ public class Seals {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onRender(GuiScreenEvent.DrawScreenEvent.Post event) {
-        if (event.getGui() instanceof AdvancementsScreen || event.getGui().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
-            Screen screen = event.getGui();
-            screen.buttons.stream().filter(widget -> widget instanceof SealButton).forEach(widget -> widget.render(event.getMatrixStack(), event.getMouseX(), event.getMouseY(), event.getRenderPartialTicks()));
+    public void onRender(ScreenEvent.Render.Post event) {
+        if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
+            Screen screen = event.getScreen();
+            screen.children().stream().filter(widget -> widget instanceof SealButton).forEach(widget -> ((SealButton) widget).render(event.getPoseStack(), event.getMouseX(), event.getMouseY(), event.getPartialTick()));
         }
     }
 

@@ -3,7 +3,8 @@
   "package": "com.buuz135.seals.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "seals.refmap.json",
-  "mixins": [
+  "client": [
+    "ClientAdvancementsAccessor",
     "MixinPlayerRenderer"
   ],
   "minVersion": "0.8"

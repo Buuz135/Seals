@@ -1,18 +1,17 @@
 package com.buuz135.seals.network;
 
 import com.buuz135.seals.storage.ClientSealWorldStorage;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
 public class ClientSyncSealsMessage implements IMessage {
 
-    private CompoundNBT sync;
+    private CompoundTag sync;
 
-    public ClientSyncSealsMessage(CompoundNBT sync) {
+    public ClientSyncSealsMessage(CompoundTag sync) {
         this.sync = sync;
     }
 
@@ -20,16 +19,14 @@ public class ClientSyncSealsMessage implements IMessage {
     }
 
     @Override
-    public ClientSyncSealsMessage fromBytes(ByteBuf buf) {
-        PacketBuffer packetBuffer = new PacketBuffer(buf);
-        sync = packetBuffer.readCompoundTag();
+    public ClientSyncSealsMessage fromBytes(FriendlyByteBuf buf) {
+        sync = buf.readNbt();
         return this;
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
-        PacketBuffer packetBuffer = new PacketBuffer(buf);
-        packetBuffer.writeCompoundTag(sync);
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeNbt(sync);
     }
 
     @Override

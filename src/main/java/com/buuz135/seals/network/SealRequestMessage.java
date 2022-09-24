@@ -1,17 +1,14 @@
 package com.buuz135.seals.network;
 
-import com.buuz135.seals.SealInfo;
 import com.buuz135.seals.Seals;
+import com.buuz135.seals.datapack.SealInfo;
 import com.buuz135.seals.storage.SealWorldStorage;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
@@ -28,27 +25,25 @@ public class SealRequestMessage implements IMessage {
     }
 
     @Override
-    public SealRequestMessage fromBytes(ByteBuf buf) {
-        PacketBuffer packetBuffer = new PacketBuffer(buf);
-        seal = packetBuffer.readResourceLocation();
+    public SealRequestMessage fromBytes(FriendlyByteBuf buf) {
+        seal = buf.readResourceLocation();
         return this;
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
-        PacketBuffer packetBuffer = new PacketBuffer(buf);
-        packetBuffer.writeResourceLocation(seal);
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeResourceLocation(seal);
     }
 
     @Override
     public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
         contextSupplier.get().enqueueWork(() -> {
-            ServerPlayerEntity entity = contextSupplier.get().getSender();
+            ServerPlayer entity = contextSupplier.get().getSender();
             SealInfo sealInfo = Seals.SEAL_MANAGER.getSeal(seal);
             if (sealInfo != null && sealInfo.hasAchievedSeal(entity)) {
-                SealWorldStorage.get(entity.getServerWorld()).put(entity.getUniqueID(), seal);
-                CompoundNBT data = SealWorldStorage.get(entity.getServerWorld()).serializeNBT();
-                entity.getServerWorld().getPlayers().forEach(entity1 -> Seals.NETWORK.sendTo(new ClientSyncSealsMessage(data), entity1.connection.netManager, NetworkDirection.PLAY_TO_CLIENT));
+                SealWorldStorage.get(entity.getLevel()).put(entity.getUUID(), seal);
+                CompoundTag data = SealWorldStorage.get(entity.getLevel()).save(new CompoundTag());
+                entity.getLevel().getPlayers(serverPlayer -> true).forEach(entity1 -> Seals.NETWORK.sendTo(new ClientSyncSealsMessage(data), entity1.connection.connection, NetworkDirection.PLAY_TO_CLIENT));
             }
         });
         contextSupplier.get().setPacketHandled(true);

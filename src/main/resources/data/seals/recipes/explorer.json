@@ -1,0 +1,15 @@
+{
+  "lang_key": "explorer",
+  "requisites": [
+    "minecraft:adventure/adventuring_time",
+    "minecraft:nether/fast_travel"
+  ],
+  "icon": {
+    "type": "item",
+    "value": {
+      "stack": "minecraft:oak_boat"
+    }
+  },
+  "invisible": false,
+  "type": "seals:seal"
+}

@@ -1,0 +1,16 @@
+{
+  "lang_key": "cultist",
+  "requisites": [
+    "minecraft:end/levitate",
+    "minecraft:end/respawn_dragon",
+    "minecraft:end/enter_end_gateway"
+  ],
+  "icon": {
+    "type": "item",
+    "value": {
+      "stack": "minecraft:ender_eye"
+    }
+  },
+  "invisible": false,
+  "type": "seals:seal"
+}
