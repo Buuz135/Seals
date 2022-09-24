@@ -7,7 +7,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 public class SealInfoSerializer implements RecipeSerializer<SealInfo> {
@@ -32,7 +31,9 @@ public class SealInfoSerializer implements RecipeSerializer<SealInfo> {
     @Override
     public @Nullable SealInfo fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buf) {
         var seal = new SealInfo(resourceLocation);
-        for (int i = 0; i < buf.readInt(); i++) {
+        seal.setSealLangKey(buf.readUtf());
+        int amount = buf.readInt();
+        for (int i = 0; i < amount; i++) {
             seal.getRequisites().add(buf.readResourceLocation());
         }
         //TODO IMPROVE
@@ -45,7 +46,7 @@ public class SealInfoSerializer implements RecipeSerializer<SealInfo> {
 
     @Override
     public void toNetwork(FriendlyByteBuf buf, SealInfo sealInfo) {
-        buf.writeCharSequence(sealInfo.getSealLangKey(), Charset.defaultCharset());
+        buf.writeUtf(sealInfo.getSealLangKey());
         buf.writeInt(sealInfo.getRequisites().size());
         sealInfo.getRequisites().forEach(buf::writeResourceLocation);
 
