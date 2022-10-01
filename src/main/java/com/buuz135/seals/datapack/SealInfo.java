@@ -11,12 +11,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SimpleRecipeSerializer;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SealInfo implements Recipe<Container> {
+
+    public static final RecipeSerializer<SealInfo> SERIALIZER = new SealInfoSerializer();
 
     private ResourceLocation sealID;
     private String sealLangKey;
@@ -112,11 +115,11 @@ public class SealInfo implements Recipe<Container> {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return Seals.EMOJI_RECIPE_SERIALIZER.get();
+        return SERIALIZER;
     }
 
     @Override
     public RecipeType<?> getType() {
-        return Seals.SEAL_RECIPE_TYPE.get();
+        return Seals.SEAL_RECIPE_TYPE;
     }
 }
