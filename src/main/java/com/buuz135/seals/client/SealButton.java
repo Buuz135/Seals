@@ -12,7 +12,8 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import java.awt.*;
@@ -23,14 +24,13 @@ import java.util.stream.Collectors;
 
 public class SealButton extends Button {
 
-    private static Color SELECTED = new Color(0xffcc00);
-    private static Color COMPLETED = new Color(0x00ff15);
+    private static final Color SELECTED = new Color(0xffcc00);
 
-    private SealInfo info;
-    private boolean left;
+    private final SealInfo info;
+    private final boolean left;
 
     public SealButton(SealInfo info, int xIn, int yIn, boolean left) {
-        super(xIn, yIn, 22, 22, Component.literal(""), press -> {
+        super(xIn, yIn, 22, 22, new TextComponent(""), press -> {
             Seals.NETWORK.sendToServer(new SealRequestMessage(info.getSealID()));
         });
         this.info = info;
@@ -62,7 +62,7 @@ public class SealButton extends Button {
         if (info.getIcon() != null) info.getIcon().drawIcon(Minecraft.getInstance().screen, x, y);
         if (isHoveredOrFocused()) {
             List<String> tooltip = new ArrayList<>();
-            tooltip.add(ChatFormatting.LIGHT_PURPLE + Component.translatable("seal." + info.getSealLangKey()).getString());
+            tooltip.add(ChatFormatting.LIGHT_PURPLE + new TranslatableComponent("seal." + info.getSealLangKey()).getString());
             var clientAdvancements = minecraft.player.connection.getAdvancements();
             for (ResourceLocation requisite : info.getRequisites()) {
                 Advancement advancement = minecraft.player.connection.getAdvancements().getAdvancements().get(requisite);
@@ -77,7 +77,7 @@ public class SealButton extends Button {
                 }
             }
             stack.translate(0, 0, 300);
-            minecraft.screen.renderTooltip(stack, tooltip.stream().map(s -> Component.literal(s)).collect(Collectors.toList()), Optional.empty(), left ? x + 18 : x + 7, y + (tooltip.size() / 2) + fontrenderer.lineHeight);
+            minecraft.screen.renderTooltip(stack, tooltip.stream().map(TextComponent::new).collect(Collectors.toList()), Optional.empty(), left ? x + 18 : x + 7, y + (tooltip.size() / 2) + fontrenderer.lineHeight);
             stack.translate(0, 0, -300);
         }
     }

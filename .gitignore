@@ -25,6 +25,8 @@ hs_err_pid*
 run/
 .iml
 out/
+runServer/
+runClientSecondary/
 
 CHANGELOG.md
 # Project exclude paths

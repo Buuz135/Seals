@@ -11,6 +11,8 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
@@ -25,7 +27,7 @@ public class MixinPlayerRenderer {
     @Inject(at = @At("HEAD"), method = "renderNameTag(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", cancellable = true)
     private void renderName(AbstractClientPlayer entity, Component displayNameIn, PoseStack matrixStack, MultiBufferSource buffer, int packedLightIn, CallbackInfo info) {
         if (Minecraft.getInstance().getEntityRenderDispatcher().distanceToSqr(entity) < 100.0D && ClientSealWorldStorage.SEALS.getClientSeals().containsKey(entity.getUUID().toString()) && Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString())) != null) {
-            renderCustomNameTag(entity, Component.translatable("seal." + Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString())).getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), matrixStack, buffer, packedLightIn);
+            renderCustomNameTag(entity, new TranslatableComponent("seal." + Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString())).getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), matrixStack, buffer, packedLightIn);
             matrixStack.translate(0.0D, (double) (9.0F * 1.15F * 0.025F), 0.0D);
             renderCustomNameTag(entity, displayNameIn, matrixStack, buffer, packedLightIn);
             matrixStack.translate(0.0D, -(double) (9.0F * 1.15F * 0.025F), 0.0D);
@@ -41,7 +43,7 @@ public class MixinPlayerRenderer {
             Objective objective = scoreboard.getDisplayObjective(2);
             if (objective != null) {
                 Score score = scoreboard.getOrCreatePlayerScore(p_117808_.getScoreboardName(), objective);
-                this.renderNameTagParent(p_117808_, Component.literal(Integer.toString(score.getScore())).append(" ").append(objective.getDisplayName()), p_117810_, p_117811_, p_117812_);
+                this.renderNameTagParent(p_117808_, new TextComponent(Integer.toString(score.getScore())).append(" ").append(objective.getDisplayName()), p_117810_, p_117811_, p_117812_);
                 p_117810_.translate(0.0D, (double) (9.0F * 1.15F * 0.025F), 0.0D);
             }
         }

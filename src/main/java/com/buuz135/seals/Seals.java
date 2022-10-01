@@ -3,7 +3,6 @@ package com.buuz135.seals;
 import com.buuz135.seals.client.SealButton;
 import com.buuz135.seals.config.SealManager;
 import com.buuz135.seals.datapack.SealInfo;
-import com.buuz135.seals.datapack.SealInfoSerializer;
 import com.buuz135.seals.network.ClientSyncSealsMessage;
 import com.buuz135.seals.network.SealRequestMessage;
 import com.buuz135.seals.storage.SealWorldStorage;
@@ -11,6 +10,7 @@ import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -23,11 +23,11 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("seals")
@@ -64,17 +63,15 @@ public class Seals {
     private static final Logger LOGGER = LogManager.getLogger();
     public static final List<UUID> PATREONS = new ArrayList<>();
 
-    public static DeferredRegister<RecipeSerializer<?>> RECIPE_SER = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, "seals");
-    public static final RegistryObject<SealInfoSerializer> EMOJI_RECIPE_SERIALIZER = RECIPE_SER.register("seal", SealInfoSerializer::new);
 
-    public static DeferredRegister<RecipeType<?>> RECIPE_TYPE = DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, "seals");
-    public static final RegistryObject<RecipeType<SealInfo>> SEAL_RECIPE_TYPE = RECIPE_TYPE.register("seal", () -> RecipeType.simple(new ResourceLocation("seals", "seal")));
+    public static final RecipeType<SealInfo> SEAL_RECIPE_TYPE = new RecipeType<SealInfo>() {
+        @Override
+        public String toString(){
+            return "seals:seal";
+        }
+    };
 
     public Seals() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
-        RECIPE_SER.register(FMLJavaModLoadingContext.get().getModEventBus());
-        RECIPE_TYPE.register(FMLJavaModLoadingContext.get().getModEventBus());
-
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
         NETWORK.registerMessage(0, ClientSyncSealsMessage.class, ClientSyncSealsMessage::toBytes, packetBuffer -> new ClientSyncSealsMessage().fromBytes(packetBuffer), ClientSyncSealsMessage::handle);
@@ -86,17 +83,13 @@ public class Seals {
                 e.printStackTrace();
             }
         }).start();
-
     }
 
-    private void doClientStuff(final FMLClientSetupEvent event) {
-        //ClientAdvancements advancementManager = new ClientAdvancements(Minecraft.getInstance());
-    }
 
 
     @SubscribeEvent
     public void onRecipesUpdated(RecipesUpdatedEvent event) {
-        SEAL_MANAGER.setSeals(event.getRecipeManager().getAllRecipesFor(SEAL_RECIPE_TYPE.get()));
+        SEAL_MANAGER.setSeals(event.getRecipeManager().getAllRecipesFor(SEAL_RECIPE_TYPE));
     }
 
     @SubscribeEvent
@@ -109,7 +102,7 @@ public class Seals {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onGuiOpen(ScreenEvent.Init.Post event) {
+    public void onGuiOpen(ScreenEvent.InitScreenEvent.Post event) {
         if (event.getScreen() instanceof AdvancementsScreen) {
             List<SealInfo> seals = new ArrayList<>(SEAL_MANAGER.getSeals());
             seals.removeIf(sealInfo -> sealInfo.isInvisible() && !sealInfo.hasAchievedSealClient(Minecraft.getInstance().player));
@@ -141,23 +134,23 @@ public class Seals {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onRender(ScreenEvent.Render.Post event) {
+    public void onRender(ScreenEvent.DrawScreenEvent.Post event) {
         if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
             Screen screen = event.getScreen();
-            screen.children().stream().filter(widget -> widget instanceof SealButton).forEach(widget -> ((SealButton) widget).render(event.getPoseStack(), event.getMouseX(), event.getMouseY(), event.getPartialTick()));
+            screen.children().stream().filter(widget -> widget instanceof SealButton).forEach(widget -> ((SealButton) widget).render(event.getPoseStack(), event.getMouseX(), event.getMouseY(), event.getPartialTicks()));
         }
     }
 
     private static List<UUID> getPlayers(URL url) {
         try {
             List<UUID> players = new ArrayList();
-            (new JsonParser()).parse(readUrl(url)).getAsJsonObject().get("uuid").getAsJsonArray().forEach((jsonElement) -> {
+            JsonParser.parseString(readUrl(url)).getAsJsonObject().get("uuid").getAsJsonArray().forEach((jsonElement) -> {
                 players.add(UUID.fromString(jsonElement.getAsString()));
             });
             return players;
         } catch (IOException var2) {
             var2.printStackTrace();
-            return new ArrayList();
+            return new ArrayList<>();
         }
     }
 
@@ -175,6 +168,15 @@ public class Seals {
         } finally {
             if (reader != null)
                 reader.close();
+        }
+    }
+
+    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = "seals")
+    static class ModEvents {
+        @SubscribeEvent
+        public static void registerRecipeSerializers(RegistryEvent.Register<RecipeSerializer<?>> event) {
+            Registry.register(Registry.RECIPE_TYPE, new ResourceLocation(SEAL_RECIPE_TYPE.toString()), SEAL_RECIPE_TYPE);
+            event.getRegistry().register(SealInfo.SERIALIZER);
         }
     }
 }

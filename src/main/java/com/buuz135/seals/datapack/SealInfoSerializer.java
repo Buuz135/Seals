@@ -5,11 +5,16 @@ import com.google.gson.JsonObject;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraftforge.registries.ForgeRegistryEntry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
-public class SealInfoSerializer implements RecipeSerializer<SealInfo> {
+public class SealInfoSerializer extends ForgeRegistryEntry<RecipeSerializer<?>> implements RecipeSerializer<SealInfo>  {
+
+    public SealInfoSerializer(){
+        this.setRegistryName(new ResourceLocation("seals","seal"));
+    }
 
     @Override
     public SealInfo fromJson(ResourceLocation resourceLocation, JsonObject jsonObject) {

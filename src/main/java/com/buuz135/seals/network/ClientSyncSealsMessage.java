@@ -32,7 +32,7 @@ public class ClientSyncSealsMessage implements IMessage {
     @Override
     public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
         contextSupplier.get().enqueueWork(() -> {
-            ClientSealWorldStorage.SEALS.deserialize(sync);
+                ClientSealWorldStorage.SEALS.deserialize(sync);
         });
         contextSupplier.get().setPacketHandled(true);
     }

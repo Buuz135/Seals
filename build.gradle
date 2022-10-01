@@ -2,13 +2,11 @@ buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
         maven { url = "https://repo.spongepowered.org/maven/" }
-        jcenter()
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
         classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
-        classpath "com.wynprice.cursemaven:CurseMaven:2.1.1"
     }
 }
 
@@ -16,7 +14,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
 
-version = "1.19.2-${modVersion}"
+version = "1.18.2-${modVersion}"
 group = modGroup
 
 java {
@@ -25,7 +23,7 @@ java {
 }
 
 minecraft {
-    mappings channel: 'official', version: '1.19.2'
+    mappings channel: 'official', version: '1.18.2'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -35,7 +33,6 @@ minecraft {
         client {
             arg "-mixin.config=seals.mixins.json"
             workingDirectory project.file('run')
-
             // Recommended logging data for a userdev environment
             //property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
@@ -48,10 +45,9 @@ minecraft {
                 }
             }
         }
-
         server {
             arg "-mixin.config=seals.mixins.json"
-            workingDirectory project.file('run')
+            workingDirectory project.file('runServer')
 
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
@@ -88,10 +84,6 @@ minecraft {
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven {
-        url = "https://www.cursemaven.com"
-    }
 }
 
 mixin {
@@ -102,7 +94,7 @@ dependencies {
     // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.19.2-43.1.27'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.1.80'
     //compile fg.deobf("curse.maven:better-advancements-272515:3066764")
 }
 
