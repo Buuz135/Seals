@@ -59,6 +59,7 @@ public class SealButton extends Button {
             RenderSystem.setShaderColor(SELECTED.getRed() / 255f, SELECTED.getGreen() / 255f, SELECTED.getBlue() / 255f, this.alpha);
         }
         guiGraphics.blit(WIDGETS_LOCATION, this.getX(), this.getY(), 24, 23, 22, 22);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1);
         if (info.getIcon() != null) info.getIcon().drawIcon(guiGraphics, this.getX(), this.getY());
         if (isHovered()) {
             List<String> tooltip = new ArrayList<>();

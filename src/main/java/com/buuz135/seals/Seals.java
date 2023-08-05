@@ -6,12 +6,17 @@ import com.buuz135.seals.datapack.SealInfo;
 import com.buuz135.seals.datapack.SealInfoSerializer;
 import com.buuz135.seals.network.ClientSyncSealsMessage;
 import com.buuz135.seals.network.SealRequestMessage;
+import com.buuz135.seals.storage.ClientSealWorldStorage;
 import com.buuz135.seals.storage.SealWorldStorage;
 import com.google.gson.JsonParser;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,6 +26,7 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
+import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -105,6 +111,16 @@ public class Seals {
         Level world = event.getEntity().level();
         if (world instanceof ServerLevel && event.getEntity() instanceof ServerPlayer) {
             NETWORK.sendTo(new ClientSyncSealsMessage(SealWorldStorage.get((ServerLevel) world).save(new CompoundTag())), ((ServerPlayer) event.getEntity()).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @SubscribeEvent
+    public void onNameTagRender(RenderNameTagEvent event) {
+        var entity = event.getEntity();
+        if (event.getEntity() instanceof AbstractClientPlayer clientPlayer && ClientSealWorldStorage.SEALS.getClientSeals().containsKey(entity.getUUID().toString()) && Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString())) != null) {
+            ((EntityRenderer<AbstractClientPlayer>) event.getEntityRenderer()).renderNameTag(clientPlayer, Component.translatable("seal." + Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString())).getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
+            event.getPoseStack().translate(0, (double) (9.0F * 1.15F * 0.025F), 0);
         }
     }
 
