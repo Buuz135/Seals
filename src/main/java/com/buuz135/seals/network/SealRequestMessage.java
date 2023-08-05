@@ -1,6 +1,7 @@
 package com.buuz135.seals.network;
 
 import com.buuz135.seals.Seals;
+import com.buuz135.seals.config.SealManager;
 import com.buuz135.seals.datapack.SealInfo;
 import com.buuz135.seals.storage.SealWorldStorage;
 import net.minecraft.nbt.CompoundTag;
@@ -41,7 +42,9 @@ public class SealRequestMessage implements IMessage {
         contextSupplier.get().enqueueWork(() -> {
             ServerPlayer entity = contextSupplier.get().getSender();
             if (entity.level() instanceof ServerLevel serverLevel) {
-                SealInfo sealInfo = serverLevel.getRecipeManager().getAllRecipesFor(Seals.SEAL_RECIPE_TYPE.get()).stream().filter(sealInfo1 -> sealInfo1.getSealID().equals(this.seal)).findFirst().orElse(null);
+                var manager = new SealManager();
+                manager.setSeals(serverLevel.getRecipeManager().getAllRecipesFor(Seals.SEAL_RECIPE_TYPE.get()));
+                SealInfo sealInfo = manager.getSeal(this.seal);
                 if (sealInfo != null && sealInfo.hasAchievedSeal(entity)) {
                     SealWorldStorage.get(serverLevel).put(entity.getUUID(), seal);
                     CompoundTag data = SealWorldStorage.get(serverLevel).save(new CompoundTag());
