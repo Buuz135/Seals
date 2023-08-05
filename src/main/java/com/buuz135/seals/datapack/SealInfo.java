@@ -4,6 +4,7 @@ import com.buuz135.seals.Seals;
 import com.buuz135.seals.client.icon.IIcon;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -77,7 +78,7 @@ public class SealInfo implements Recipe<Container> {
     public boolean hasAchievedSeal(ServerPlayer entity) {
         int completed = 0;
         for (ResourceLocation requisite : this.getRequisites()) {
-            Advancement advancement = entity.getLevel().getServer().getAdvancements().getAdvancement(requisite);
+            Advancement advancement = entity.level().getServer().getAdvancements().getAdvancement(requisite);
             if (advancement != null && entity.getAdvancements().getOrStartProgress(advancement).isDone()) {
                 ++completed;
             }
@@ -91,7 +92,7 @@ public class SealInfo implements Recipe<Container> {
     }
 
     @Override
-    public ItemStack assemble(Container p_44001_) {
+    public ItemStack assemble(Container p_44001_, RegistryAccess access) {
         return ItemStack.EMPTY;
     }
 
@@ -101,7 +102,7 @@ public class SealInfo implements Recipe<Container> {
     }
 
     @Override
-    public ItemStack getResultItem() {
+    public ItemStack getResultItem(RegistryAccess access) {
         return ItemStack.EMPTY;
     }
 

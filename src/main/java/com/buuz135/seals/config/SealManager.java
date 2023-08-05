@@ -20,43 +20,6 @@ public class SealManager {
 
     public SealManager() {
         this.seals = new ArrayList<>();
-        /*
-        SealInfo sealInfo = new SealInfo(new ResourceLocation("seals:alchemist"), "alchemist");
-        sealInfo.setRequisites(new ResourceLocation[]{new ResourceLocation("minecraft:nether/all_effects"), new ResourceLocation("minecraft:nether/all_potions")});
-        sealInfo.setIcon(new ItemStackIcon(ForgeRegistries.ITEMS.getKey(Items.BREWING_STAND)));
-        seals.add(sealInfo);
-        sealInfo = new SealInfo(new ResourceLocation("seals:hero"), "hero");
-        sealInfo.setRequisites(new ResourceLocation[]{
-                new ResourceLocation("minecraft:adventure/hero_of_the_village"),
-                new ResourceLocation("minecraft:adventure/kill_all_mobs"),
-                new ResourceLocation("minecraft:adventure/arbalistic")
-        });
-        sealInfo.setIcon(new ItemStackIcon(ForgeRegistries.ITEMS.getKey(Items.SHIELD)));
-        seals.add(sealInfo);
-        sealInfo = new SealInfo(new ResourceLocation("seals:explorer"), "explorer");
-        sealInfo.setRequisites(new ResourceLocation[]{
-                new ResourceLocation("minecraft:adventure/adventuring_time"),
-                new ResourceLocation("minecraft:nether/fast_travel")
-        });
-        sealInfo.setIcon(new ItemStackIcon(ForgeRegistries.ITEMS.getKey(Items.OAK_BOAT)));
-        seals.add(sealInfo);
-        sealInfo = new SealInfo(new ResourceLocation("seals:cultist.json"), "cultist.json");
-        sealInfo.setRequisites(new ResourceLocation[]{
-                new ResourceLocation("minecraft:end/levitate"),
-                new ResourceLocation("minecraft:end/respawn_dragon"),
-                new ResourceLocation("minecraft:end/enter_end_gateway")
-        });
-        sealInfo.setIcon(new ItemStackIcon(ForgeRegistries.ITEMS.getKey(Items.ENDER_EYE)));
-        seals.add(sealInfo);
-        sealInfo = new SealInfo(new ResourceLocation("seals:pacifist"), "pacifist");
-        sealInfo.setRequisites(new ResourceLocation[]{
-                new ResourceLocation("minecraft:husbandry/bred_all_animals"),
-                new ResourceLocation("minecraft:husbandry/complete_catalogue"),
-                new ResourceLocation("minecraft:husbandry/balanced_diet"),
-                new ResourceLocation("minecraft:story/cure_zombie_villager")
-        });
-        sealInfo.setIcon(new ItemStackIcon(ForgeRegistries.ITEMS.getKey(Items.EMERALD)));
-        seals.add(sealInfo);*/
     }
 
     public List<SealInfo> getSeals() {

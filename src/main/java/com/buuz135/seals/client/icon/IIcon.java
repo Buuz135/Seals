@@ -1,12 +1,12 @@
 package com.buuz135.seals.client.icon;
 
 
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.GuiGraphics;
 
 public interface IIcon {
 
     String getName();
 
-    void drawIcon(Screen screen, int posX, int posY);
+    void drawIcon(GuiGraphics guiGraphics, int posX, int posY);
 
 }

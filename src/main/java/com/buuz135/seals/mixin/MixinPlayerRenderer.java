@@ -3,7 +3,6 @@ package com.buuz135.seals.mixin;
 import com.buuz135.seals.Seals;
 import com.buuz135.seals.storage.ClientSealWorldStorage;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -14,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
+import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -65,9 +65,9 @@ public class MixinPlayerRenderer {
             int j = (int) (f1 * 255.0F) << 24;
             Font font = Minecraft.getInstance().font;
             float f2 = (float) (-font.width(p_114499_) / 2);
-            font.drawInBatch(p_114499_, f2, (float) i, 553648127, false, matrix4f, p_114501_, flag, j, p_114502_);
+            font.drawInBatch(p_114499_, f2, (float) i, 553648127, false, matrix4f, p_114501_, flag ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, j, p_114502_);
             if (flag) {
-                font.drawInBatch(p_114499_, f2, (float) i, -1, false, matrix4f, p_114501_, false, 0, p_114502_);
+                font.drawInBatch(p_114499_, f2, (float) i, -1, false, matrix4f, p_114501_, Font.DisplayMode.NORMAL, 0, p_114502_);
             }
 
             p_114500_.popPose();

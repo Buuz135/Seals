@@ -6,11 +6,11 @@ import com.buuz135.seals.network.SealRequestMessage;
 import com.buuz135.seals.storage.ClientSealWorldStorage;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -32,7 +32,7 @@ public class SealButton extends Button {
     public SealButton(SealInfo info, int xIn, int yIn, boolean left) {
         super(xIn, yIn, 22, 22, Component.literal(""), press -> {
             Seals.NETWORK.sendToServer(new SealRequestMessage(info.getSealID()));
-        });
+        }, Button.DEFAULT_NARRATION::createNarrationMessage);
         this.info = info;
         this.width = 22;
         this.height = 22;
@@ -41,12 +41,12 @@ public class SealButton extends Button {
     }
 
     @Override
-    public void render(PoseStack stack, int p_render_1_, int p_render_2_, float p_render_3_) {
+    public void render(GuiGraphics stack, int p_render_1_, int p_render_2_, float p_render_3_) {
         super.render(stack, p_render_1_, p_render_2_, p_render_3_);
     }
 
     @Override
-    public void renderButton(PoseStack stack, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+    public void renderWidget(GuiGraphics guiGraphics, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
         Minecraft minecraft = Minecraft.getInstance();
         Font fontrenderer = minecraft.font;
         RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
@@ -58,9 +58,9 @@ public class SealButton extends Button {
         if (ClientSealWorldStorage.SEALS.getClientSeals().containsKey(Minecraft.getInstance().player.getUUID().toString()) && ClientSealWorldStorage.SEALS.getClientSeals().get(Minecraft.getInstance().player.getUUID().toString()).equals(info.getSealID())) {
             RenderSystem.setShaderColor(SELECTED.getRed() / 255f, SELECTED.getGreen() / 255f, SELECTED.getBlue() / 255f, this.alpha);
         }
-        this.blit(stack, this.x, this.y, 24, 23, 22, 22);
-        if (info.getIcon() != null) info.getIcon().drawIcon(Minecraft.getInstance().screen, x, y);
-        if (isHoveredOrFocused()) {
+        guiGraphics.blit(WIDGETS_LOCATION, this.getX(), this.getY(), 24, 23, 22, 22);
+        if (info.getIcon() != null) info.getIcon().drawIcon(guiGraphics, this.getX(), this.getY());
+        if (isHovered()) {
             List<String> tooltip = new ArrayList<>();
             tooltip.add(ChatFormatting.LIGHT_PURPLE + Component.translatable("seal." + info.getSealLangKey()).getString());
             var clientAdvancements = minecraft.player.connection.getAdvancements();
@@ -76,9 +76,9 @@ public class SealButton extends Button {
                     tooltip.add(ChatFormatting.GOLD + "- " + ChatFormatting.RED + "??????");
                 }
             }
-            stack.translate(0, 0, 300);
-            minecraft.screen.renderTooltip(stack, tooltip.stream().map(s -> Component.literal(s)).collect(Collectors.toList()), Optional.empty(), left ? x + 18 : x + 7, y + (tooltip.size() / 2) + fontrenderer.lineHeight);
-            stack.translate(0, 0, -300);
+            guiGraphics.pose().translate(0, 0, 300);
+            guiGraphics.renderTooltip(Minecraft.getInstance().font, tooltip.stream().map(s -> Component.literal(s)).collect(Collectors.toList()), Optional.empty(), left ? this.getX() + 18 : this.getX() + 7, this.getY() + (tooltip.size() / 2) + fontrenderer.lineHeight);
+            guiGraphics.pose().translate(0, 0, -300);
         }
     }
 

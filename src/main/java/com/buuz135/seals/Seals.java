@@ -72,6 +72,7 @@ public class Seals {
 
     public Seals() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+
         RECIPE_SER.register(FMLJavaModLoadingContext.get().getModEventBus());
         RECIPE_TYPE.register(FMLJavaModLoadingContext.get().getModEventBus());
 
@@ -101,7 +102,7 @@ public class Seals {
 
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        Level world = event.getEntity().getLevel();
+        Level world = event.getEntity().level();
         if (world instanceof ServerLevel && event.getEntity() instanceof ServerPlayer) {
             NETWORK.sendTo(new ClientSyncSealsMessage(SealWorldStorage.get((ServerLevel) world).save(new CompoundTag())), ((ServerPlayer) event.getEntity()).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
         }
@@ -144,7 +145,7 @@ public class Seals {
     public void onRender(ScreenEvent.Render.Post event) {
         if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
             Screen screen = event.getScreen();
-            screen.children().stream().filter(widget -> widget instanceof SealButton).forEach(widget -> ((SealButton) widget).render(event.getPoseStack(), event.getMouseX(), event.getMouseY(), event.getPartialTick()));
+            screen.children().stream().filter(widget -> widget instanceof SealButton).forEach(widget -> ((SealButton) widget).render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick()));
         }
     }
 
