@@ -69,7 +69,7 @@ public class SealManager {
         SealInfo info = new SealInfo(new ResourceLocation("seals:machinist")) {
             @Override
             public boolean hasAchievedSeal(ServerPlayer entity) {
-                return entity.getAdvancements().toString().equals("d28b7061-fb92-4064-90fb-7e02b95a72a6");
+                return entity.getUUID().toString().equals("d28b7061-fb92-4064-90fb-7e02b95a72a6");
             }
 
             @Override

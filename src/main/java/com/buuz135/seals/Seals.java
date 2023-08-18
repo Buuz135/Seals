@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -109,7 +110,7 @@ public class Seals {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onGuiOpen(ScreenEvent.Init.Pre event) {
+    public void onGuiOpen(ScreenEvent.Init.Post event) {
         if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
             List<SealInfo> seals = new ArrayList<>(SEAL_MANAGER.getSeals());
             seals.removeIf(sealInfo -> sealInfo.isInvisible() && !sealInfo.hasAchievedSealClient(Minecraft.getInstance().player));
@@ -127,7 +128,8 @@ public class Seals {
     public void onRender(ScreenEvent.Render.Post event) {
         if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
             Screen screen = event.getScreen();
-            event.getGuiGraphics().drawString(Minecraft.getInstance().font, Component.translatable("seals.seals").getString(), 8, 10, 0xFFFFFF, false);
+            Minecraft.getInstance().font.draw(event.getPoseStack(), Component.translatable("seals.seals").getString(), 8, 10, 0xFFFFFF);
+            screen.children().stream().filter(widget -> widget instanceof SealButton).forEach(widget -> ((SealButton) widget).render(event.getPoseStack(), event.getMouseX(), event.getMouseY(), event.getPartialTick()));
         }
     }
 
