@@ -27,15 +27,12 @@ jobs:
         uses: Kir-Antipov/mc-publish@v3.2
         with:
           curseforge-id: 349206
-          modrinth-id: rEuzehyH
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files-primary: build/libs/!(*-@(dev|sources)).jar
           files-secondary: build/libs/*-@(dev|sources).jar
           version-type: beta
           loaders: forge
           game-versions: 1.20.1
-          version: ${{ github.ref_name }}
           java: 17
           name: ""
           changelog: "https://github.com/Buuz135/Seals/commits/1.20"
