@@ -130,10 +130,11 @@ public class Seals {
         if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
             List<SealInfo> seals = new ArrayList<>(SEAL_MANAGER.getSeals());
             seals.removeIf(sealInfo -> sealInfo.isInvisible() && !sealInfo.hasAchievedSealClient(Minecraft.getInstance().player));
-            int guiLeft = 35;
+            int guiLeft = 35 - 26;
             int guiTop = 30;
+            int number = event.getScreen().height / 26;
             for (int i = 0; i < seals.size(); i++) {
-                event.addListener(new SealButton(seals.get(i), guiLeft - 26 * ((i / 6 + 1)), guiTop + 24 * (i % 6) - 6, true));
+                event.addListener(new SealButton(seals.get(i), guiLeft + 26 * ((i / number)), guiTop + 24 * (i % number) - 6, true));
             }
         }
 
