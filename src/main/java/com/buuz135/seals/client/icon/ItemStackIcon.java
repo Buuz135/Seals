@@ -30,4 +30,14 @@ public class ItemStackIcon implements IIcon {
     public ResourceLocation getStack() {
         return stack;
     }
+
+    private ItemStack cached = ItemStack.EMPTY;
+
+    public ItemStack getCachedStack() {
+        if (cached.isEmpty()) {
+            cached = new ItemStack(ForgeRegistries.ITEMS.getValue(stack));
+        }
+
+        return cached;
+    }
 }
