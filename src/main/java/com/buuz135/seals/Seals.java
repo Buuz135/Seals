@@ -1,21 +1,16 @@
 package com.buuz135.seals;
 
 import com.buuz135.seals.client.SealButton;
-import com.buuz135.seals.client.icon.ItemStackIcon;
 import com.buuz135.seals.config.SealManager;
 import com.buuz135.seals.datapack.SealInfo;
 import com.buuz135.seals.datapack.SealInfoSerializer;
 import com.buuz135.seals.network.ClientSyncSealsMessage;
 import com.buuz135.seals.network.SealRequestMessage;
-import com.buuz135.seals.storage.ClientSealWorldStorage;
 import com.buuz135.seals.storage.SealWorldStorage;
 import com.google.gson.JsonParser;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
-import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -36,7 +31,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.RecipesUpdatedEvent;
-import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -137,23 +131,6 @@ public class Seals {
             event.getGuiGraphics().drawString(Minecraft.getInstance().font, Component.translatable("seals.seals").getString(), 8, 10, 0xFFFFFF, false);
             screen.children().stream().filter(widget -> widget instanceof SealButton).forEach(widget -> ((SealButton) widget).render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick()));
         }
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onNameTag(RenderNameTagEvent event) {
-        var entity = event.getEntity();
-        if (ClientSealWorldStorage.SEALS.getClientSeals().containsKey(entity.getUUID().toString()) && Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString())) != null) {
-            var seal = Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString()));
-            if (seal.getIcon() instanceof ItemStackIcon icon) {
-                renderIcon((AbstractClientPlayer) entity, event.getContent(), event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(), event.getPartialTick(), seal, icon);
-            }
-
-        }
-    }
-
-    public void renderIcon(AbstractClientPlayer entity, Component component, PoseStack pose, MultiBufferSource multiBufferSource, int packedLight, float partialTick, SealInfo seal, ItemStackIcon icon) {
-
     }
 
     private static List<UUID> getPlayers(URL url) {
