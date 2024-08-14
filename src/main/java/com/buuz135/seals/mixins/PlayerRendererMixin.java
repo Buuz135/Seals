@@ -4,7 +4,6 @@ import com.buuz135.seals.Seals;
 import com.buuz135.seals.client.icon.ItemStackIcon;
 import com.buuz135.seals.storage.ClientSealWorldStorage;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
@@ -42,21 +41,18 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
                 Vec3 vec3 = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getViewYRot(partialTick));
                 pose.pushPose();
 
-                pose.translate(vec3.x, vec3.y - 0.099f + 0.5f, vec3.z);
-                //pose.mulPose(Axis.YN.rotation(Minecraft.getInstance().gameRenderer.getMainCamera().getYRot()));
-                //pose.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
+                pose.translate(vec3.x, vec3.y - 0.099f + 0.5f + 0.10, vec3.z);
+                pose.last().pose().rotate(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
+                pose.translate(0, -0.10, 0);
 
-                pose.mulPose(Axis.YP.rotation(Minecraft.getInstance().player.yRotO * -0.017453292F));
-                //pose.mulPose(Axis.YP.rotation(180));
-
-                pose.translate(Minecraft.getInstance().font.width(Component.translatable("seal." + seal.getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC)) * 0.01f + 0.3, 0, 0);
+                pose.translate(Minecraft.getInstance().font.width(Component.translatable("seal." + seal.getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC)) * -0.01f - 0.3, 0, 0);
                 var scale = 0.5f;
                 BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(icon.getCachedStack(), Minecraft.getInstance().level, null, 0);
                 if (!model.isGui3d()) {
                     scale = 0.3f;
                 }
                 pose.scale(scale, scale, 0.01F);
-                Minecraft.getInstance().getItemRenderer().render(icon.getCachedStack(), ItemDisplayContext.FIXED, false, pose, multiBufferSource, packedLight, OverlayTexture.NO_OVERLAY, model);
+                Minecraft.getInstance().getItemRenderer().render(icon.getCachedStack(), ItemDisplayContext.GUI, false, pose, multiBufferSource, packedLight, OverlayTexture.NO_OVERLAY, model);
                 pose.popPose();
             }
             pose.translate(0, translateY, 0);

@@ -133,6 +133,45 @@ public class Seals {
         }
     }
 
+    /*@OnlyIn(Dist.CLIENT)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onRender(RenderNameTagEvent event) {
+        var entity = event.getEntity();
+        var pose = event.getPoseStack();
+        var partialTick = event.getPartialTick();
+        var multiBufferSource = event.getMultiBufferSource();
+        var packedLight = event.getPackedLight();
+        if (ClientSealWorldStorage.SEALS.getClientSeals().containsKey(entity.getUUID().toString()) && Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString())) != null) {
+            var seal = Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString()));
+            //super.renderNameTag(entity, Component.translatable("seal." + seal.getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), pose, multiBufferSource, packedLight, partialTick);
+            if (seal.getIcon() instanceof ItemStackIcon icon) {
+                Vec3 vec3 = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getViewYRot(partialTick));
+                pose.pushPose();
+
+                pose.translate(vec3.x, vec3.y - 0.099f + 0.5f + 0.10, vec3.z);
+                pose.last().pose().rotate(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
+                pose.translate(0,-0.10,0);
+                //pose.last().normal().rotate(Axis.ZP.rotationDegrees(-90.0F));
+                //pose.mulPose(Axis.YN.rotation(Minecraft.getInstance().gameRenderer.getMainCamera().getYRot()));
+                //pose.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
+
+                //pose.mulPose(Axis.YP.rotation(Minecraft.getInstance().player.yRotO * -0.017453292F));
+                //pose.mulPose(Axis.YP.rotation(180));
+
+                pose.translate(Minecraft.getInstance().font.width(Component.translatable("seal." + seal.getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC)) * -0.01f - 0.3, 0, 0);
+                var scale = 0.5f;
+                BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(icon.getCachedStack(), Minecraft.getInstance().level, null, 0);
+                if (!model.isGui3d()) {
+                    scale = 0.3f;
+                }
+                pose.scale(scale, scale, 0.01F);
+                Minecraft.getInstance().getItemRenderer().render(icon.getCachedStack(), ItemDisplayContext.GUI, false, pose, multiBufferSource, packedLight, OverlayTexture.NO_OVERLAY, model);
+                pose.popPose();
+            }
+
+        }
+    }*/
+
     private static List<UUID> getPlayers(URL url) {
         try {
             List<UUID> players = new ArrayList();
