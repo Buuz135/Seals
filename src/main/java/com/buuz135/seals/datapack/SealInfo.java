@@ -1,38 +1,40 @@
 package com.buuz135.seals.datapack;
 
 import com.buuz135.seals.Seals;
-import com.buuz135.seals.client.icon.IIcon;
-import net.minecraft.advancements.Advancement;
+import com.buuz135.seals.client.icon.ItemStackIcon;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SealInfo implements Recipe<Container> {
+public class SealInfo extends CustomRecipe {
 
     private ResourceLocation sealID;
     private String sealLangKey;
     private List<ResourceLocation> requisites;
-    private IIcon icon;
+    private ItemStackIcon icon;
     private boolean invisible;
 
     public SealInfo(ResourceLocation sealID) {
+        super(CraftingBookCategory.MISC);
         this.sealID = sealID;
         this.requisites = new ArrayList<>();
         this.invisible = false;
     }
 
-    public SealInfo() {
-
+    public SealInfo(ResourceLocation sealID, String sealLangKey, List<ResourceLocation> requisites, ItemStackIcon icon, boolean invisible) {
+        super(CraftingBookCategory.MISC);
+        this.sealID = sealID;
+        this.sealLangKey = sealLangKey;
+        this.requisites = requisites;
+        this.icon = icon;
+        this.invisible = invisible;
     }
 
     public List<ResourceLocation> getRequisites() {
@@ -43,11 +45,11 @@ public class SealInfo implements Recipe<Container> {
         this.requisites = requisites;
     }
 
-    public IIcon getIcon() {
+    public ItemStackIcon getIcon() {
         return icon;
     }
 
-    public void setIcon(IIcon icon) {
+    public void setIcon(ItemStackIcon icon) {
         this.icon = icon;
     }
 
@@ -71,6 +73,10 @@ public class SealInfo implements Recipe<Container> {
         this.invisible = true;
     }
 
+    public void setInvisible(boolean invisible) {
+        this.invisible = invisible;
+    }
+
     public boolean hasAchievedSealClient(LocalPlayer entity) {
         return true;
     }
@@ -78,7 +84,7 @@ public class SealInfo implements Recipe<Container> {
     public boolean hasAchievedSeal(ServerPlayer entity) {
         int completed = 0;
         for (ResourceLocation requisite : this.getRequisites()) {
-            Advancement advancement = entity.level().getServer().getAdvancements().getAdvancement(requisite);
+            var advancement = entity.level().getServer().getAdvancements().get(requisite);
             if (advancement != null && entity.getAdvancements().getOrStartProgress(advancement).isDone()) {
                 ++completed;
             }
@@ -87,12 +93,12 @@ public class SealInfo implements Recipe<Container> {
     }
 
     @Override
-    public boolean matches(Container p_44002_, Level p_44003_) {
+    public boolean matches(CraftingInput craftingInput, Level level) {
         return false;
     }
 
     @Override
-    public ItemStack assemble(Container p_44001_, RegistryAccess access) {
+    public ItemStack assemble(CraftingInput craftingInput, HolderLookup.Provider provider) {
         return ItemStack.EMPTY;
     }
 
@@ -102,14 +108,10 @@ public class SealInfo implements Recipe<Container> {
     }
 
     @Override
-    public ItemStack getResultItem(RegistryAccess access) {
+    public ItemStack getResultItem(HolderLookup.Provider access) {
         return ItemStack.EMPTY;
     }
 
-    @Override
-    public ResourceLocation getId() {
-        return sealID;
-    }
 
     @Override
     public RecipeSerializer<?> getSerializer() {
@@ -120,4 +122,5 @@ public class SealInfo implements Recipe<Container> {
     public RecipeType<?> getType() {
         return Seals.SEAL_RECIPE_TYPE.get();
     }
+
 }

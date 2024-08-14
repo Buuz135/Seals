@@ -5,16 +5,30 @@ import com.buuz135.seals.config.SealManager;
 import com.buuz135.seals.datapack.SealInfo;
 import com.buuz135.seals.storage.SealWorldStorage;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public class SealRequestMessage implements CustomPacketPayload, IMessage {
 
-public class SealRequestMessage implements IMessage {
+    public static CustomPacketPayload.Type<SealRequestMessage> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Seals.MOD_ID, "seal_request"));
+    public static StreamCodec<? super RegistryFriendlyByteBuf, SealRequestMessage> CODEC = new StreamCodec<>() {
+        @Override
+        public SealRequestMessage decode(RegistryFriendlyByteBuf object) {
+            return new SealRequestMessage(object.readResourceLocation());
+        }
+
+        @Override
+        public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, SealRequestMessage sealRequestMessage) {
+            registryFriendlyByteBuf.writeResourceLocation(sealRequestMessage.seal);
+        }
+    };
 
     private ResourceLocation seal;
 
@@ -27,32 +41,25 @@ public class SealRequestMessage implements IMessage {
     }
 
     @Override
-    public SealRequestMessage fromBytes(FriendlyByteBuf buf) {
-        seal = buf.readResourceLocation();
-        return this;
-    }
-
-    @Override
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeResourceLocation(seal);
-    }
-
-    @Override
-    public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
-        contextSupplier.get().enqueueWork(() -> {
-            ServerPlayer entity = contextSupplier.get().getSender();
-            if (entity.level() instanceof ServerLevel serverLevel) {
+    public void handle(IPayloadContext contextSupplier) {
+        contextSupplier.enqueueWork(() -> {
+            Player entity = contextSupplier.player();
+            if (entity instanceof ServerPlayer serverPlayer && entity.level() instanceof ServerLevel serverLevel) {
                 var manager = new SealManager();
-                manager.setSeals(serverLevel.getRecipeManager().getAllRecipesFor(Seals.SEAL_RECIPE_TYPE.get()));
+                manager.setSeals(contextSupplier.player().level(), serverLevel.getRecipeManager().getAllRecipesFor(Seals.SEAL_RECIPE_TYPE.get()).stream().map(RecipeHolder::value).toList());
                 SealInfo sealInfo = manager.getSeal(this.seal);
-                if (sealInfo != null && sealInfo.hasAchievedSeal(entity)) {
+                if (sealInfo != null && sealInfo.hasAchievedSeal(serverPlayer)) {
                     SealWorldStorage.get(serverLevel).put(entity.getUUID(), seal);
-                    CompoundTag data = SealWorldStorage.get(serverLevel).save(new CompoundTag());
-                    serverLevel.getPlayers(serverPlayer -> true).forEach(entity1 -> Seals.NETWORK.sendTo(new ClientSyncSealsMessage(data), entity1.connection.connection, NetworkDirection.PLAY_TO_CLIENT));
+                    CompoundTag data = SealWorldStorage.get(serverLevel).save(new CompoundTag(), null);
+                    serverLevel.getPlayers(serverPlayer2 -> true).forEach(entity1 -> entity1.connection.send(new ClientSyncSealsMessage(data)));
                 }
             }
 
         });
-        contextSupplier.get().setPacketHandled(true);
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

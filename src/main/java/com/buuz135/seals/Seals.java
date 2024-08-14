@@ -1,41 +1,48 @@
 package com.buuz135.seals;
 
 import com.buuz135.seals.client.SealButton;
+import com.buuz135.seals.client.icon.ItemStackIcon;
 import com.buuz135.seals.config.SealManager;
 import com.buuz135.seals.datapack.SealInfo;
 import com.buuz135.seals.datapack.SealInfoSerializer;
 import com.buuz135.seals.network.ClientSyncSealsMessage;
 import com.buuz135.seals.network.SealRequestMessage;
+import com.buuz135.seals.storage.ClientSealWorldStorage;
 import com.buuz135.seals.storage.SealWorldStorage;
 import com.google.gson.JsonParser;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RecipesUpdatedEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.client.event.RecipesUpdatedEvent;
+import net.neoforged.neoforge.client.event.RenderNameTagEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,39 +55,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-;
-
-// The value here should match an entry in the META-INF/mods.toml file
 @Mod("seals")
 public class Seals {
 
+    public static String MOD_ID = "seals";
     public static final SealManager SEAL_MANAGER = new SealManager();
-    public static final SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation("seals", "network"),
-            () -> "1.0",
-            s -> true,
-            s -> true
-    );
-    // Directly reference a log4j logger.
+    public static final PayloadRegistrar NETWORK = new PayloadRegistrar(MOD_ID);
     private static final Logger LOGGER = LogManager.getLogger();
     public static final List<UUID> PATREONS = new ArrayList<>();
 
-    public static DeferredRegister<RecipeSerializer<?>> RECIPE_SER = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, "seals");
-    public static final RegistryObject<SealInfoSerializer> EMOJI_RECIPE_SERIALIZER = RECIPE_SER.register("seal", SealInfoSerializer::new);
+    public static DeferredRegister<RecipeSerializer<?>> RECIPE_SER = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID);
+    public static final DeferredHolder<RecipeSerializer<?>, SealInfoSerializer> EMOJI_RECIPE_SERIALIZER = RECIPE_SER.register("seal", SealInfoSerializer::new);
 
-    public static DeferredRegister<RecipeType<?>> RECIPE_TYPE = DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, "seals");
-    public static final RegistryObject<RecipeType<SealInfo>> SEAL_RECIPE_TYPE = RECIPE_TYPE.register("seal", () -> RecipeType.simple(new ResourceLocation("seals", "seal")));
+    public static DeferredRegister<RecipeType<?>> RECIPE_TYPE = DeferredRegister.create(Registries.RECIPE_TYPE, MOD_ID);
+    public static final DeferredHolder<RecipeType<?>, RecipeType<SealInfo>> SEAL_RECIPE_TYPE = RECIPE_TYPE.register("seal", () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(MOD_ID, "seal")));
 
-    public Seals() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+    public Seals(IEventBus modEventBus, ModContainer modContainer) {
+        if (FMLEnvironment.dist.isClient()) {
+            modEventBus.addListener(this::doClientStuff);
+        }
 
-        RECIPE_SER.register(FMLJavaModLoadingContext.get().getModEventBus());
-        RECIPE_TYPE.register(FMLJavaModLoadingContext.get().getModEventBus());
+        RECIPE_SER.register(modEventBus);
+        RECIPE_TYPE.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in
-        MinecraftForge.EVENT_BUS.register(this);
-        NETWORK.registerMessage(0, ClientSyncSealsMessage.class, ClientSyncSealsMessage::toBytes, packetBuffer -> new ClientSyncSealsMessage().fromBytes(packetBuffer), ClientSyncSealsMessage::handle);
-        NETWORK.registerMessage(1, SealRequestMessage.class, SealRequestMessage::toBytes, packetBuffer -> new SealRequestMessage().fromBytes(packetBuffer), SealRequestMessage::handle);
+        NeoForge.EVENT_BUS.register(this);
+
+        NETWORK.playToServer(SealRequestMessage.TYPE, SealRequestMessage.CODEC, SealRequestMessage::handle);
+        NETWORK.playToClient(ClientSyncSealsMessage.TYPE, ClientSyncSealsMessage.CODEC, ClientSyncSealsMessage::handle);
+
         new Thread(() -> {
             try {
                 PATREONS.addAll(getPlayers(new URL("https://raw.githubusercontent.com/Buuz135/Industrial-Foregoing/master/contributors.json")));
@@ -95,17 +98,17 @@ public class Seals {
         //ClientAdvancements advancementManager = new ClientAdvancements(Minecraft.getInstance());
     }
 
-
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public void onRecipesUpdated(RecipesUpdatedEvent event) {
-        SEAL_MANAGER.setSeals(event.getRecipeManager().getAllRecipesFor(SEAL_RECIPE_TYPE.get()));
+        SEAL_MANAGER.setSeals(Minecraft.getInstance().level, event.getRecipeManager().getAllRecipesFor(Seals.SEAL_RECIPE_TYPE.get()).stream().map(RecipeHolder::value).toList());
     }
 
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         Level world = event.getEntity().level();
-        if (world instanceof ServerLevel && event.getEntity() instanceof ServerPlayer) {
-            NETWORK.sendTo(new ClientSyncSealsMessage(SealWorldStorage.get((ServerLevel) world).save(new CompoundTag())), ((ServerPlayer) event.getEntity()).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+        if (world instanceof ServerLevel && event.getEntity() instanceof ServerPlayer serverPlayer) {
+            serverPlayer.connection.send(new ClientSyncSealsMessage(SealWorldStorage.get((ServerLevel) world).save(new CompoundTag(), null)));
         }
     }
 
@@ -134,6 +137,23 @@ public class Seals {
             event.getGuiGraphics().drawString(Minecraft.getInstance().font, Component.translatable("seals.seals").getString(), 8, 10, 0xFFFFFF, false);
             screen.children().stream().filter(widget -> widget instanceof SealButton).forEach(widget -> ((SealButton) widget).render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick()));
         }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onNameTag(RenderNameTagEvent event) {
+        var entity = event.getEntity();
+        if (ClientSealWorldStorage.SEALS.getClientSeals().containsKey(entity.getUUID().toString()) && Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString())) != null) {
+            var seal = Seals.SEAL_MANAGER.getSeal(ClientSealWorldStorage.SEALS.getClientSeals().get(entity.getUUID().toString()));
+            if (seal.getIcon() instanceof ItemStackIcon icon) {
+                renderIcon((AbstractClientPlayer) entity, event.getContent(), event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(), event.getPartialTick(), seal, icon);
+            }
+
+        }
+    }
+
+    public void renderIcon(AbstractClientPlayer entity, Component component, PoseStack pose, MultiBufferSource multiBufferSource, int packedLight, float partialTick, SealInfo seal, ItemStackIcon icon) {
+
     }
 
     private static List<UUID> getPlayers(URL url) {
@@ -165,4 +185,5 @@ public class Seals {
                 reader.close();
         }
     }
+
 }

@@ -1,59 +1,70 @@
 package com.buuz135.seals.datapack;
 
 import com.buuz135.seals.client.icon.ItemStackIcon;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 public class SealInfoSerializer implements RecipeSerializer<SealInfo> {
 
-    @Override
-    public SealInfo fromJson(ResourceLocation resourceLocation, JsonObject jsonObject) {
-        var seal = new SealInfo(resourceLocation);
-        seal.setSealLangKey(jsonObject.get("lang_key").getAsString());
-        var reqs = new ArrayList<ResourceLocation>();
-        jsonObject.getAsJsonArray("requisites").forEach(jsonElement -> {
-            reqs.add(new ResourceLocation(jsonElement.getAsString()));
+    private final StreamCodec<RegistryFriendlyByteBuf, SealInfo> codec;
+    private final MapCodec<SealInfo> mapCodec;
+
+    public SealInfoSerializer() {
+        this.codec = new StreamCodec<RegistryFriendlyByteBuf, SealInfo>() {
+            @Override
+            public SealInfo decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
+                var seal = new SealInfo(registryFriendlyByteBuf.readResourceLocation());
+                seal.setSealLangKey(registryFriendlyByteBuf.readUtf());
+                seal.setIcon(new ItemStackIcon(registryFriendlyByteBuf.readResourceLocation()));
+                seal.setInvisible(registryFriendlyByteBuf.readBoolean());
+                seal.setRequisites(Arrays.stream(registryFriendlyByteBuf.readArray(ResourceLocation[]::new, FriendlyByteBuf::readResourceLocation)).toList());
+                return seal;
+            }
+
+            @Override
+            public void encode(RegistryFriendlyByteBuf buff, SealInfo sealInfo) {
+                buff.writeResourceLocation(sealInfo.getSealID());
+                buff.writeUtf(sealInfo.getSealLangKey());
+                buff.writeResourceLocation(((ItemStackIcon) sealInfo.getIcon()).getStack());
+                buff.writeBoolean(sealInfo.isInvisible());
+                buff.writeArray(sealInfo.getRequisites().toArray(new ResourceLocation[0]), FriendlyByteBuf::writeResourceLocation);
+            }
+        };
+        this.mapCodec = RecordCodecBuilder.mapCodec(instance -> {
+            var test = instance.group(
+                    Codec.STRING.optionalFieldOf("group", "").forGetter(Recipe::getGroup),
+                    Codec.STRING.fieldOf("id").forGetter(sealInfo -> sealInfo.getSealID().toString()),
+                    Codec.STRING.fieldOf("lang_key").forGetter(SealInfo::getSealLangKey),
+                    Codec.STRING.listOf().fieldOf("requisites").forGetter(o -> o.getRequisites().stream().map(ResourceLocation::toString).toList()),
+                    Codec.STRING.fieldOf("icon").forGetter(sealInfo -> sealInfo.getIcon().getStack().toString()),
+                    Codec.BOOL.fieldOf("invisible").forGetter(SealInfo::isInvisible)
+            );
+            return test.apply(instance, (s, id, lang, requisites, icon, invisible) -> new SealInfo(ResourceLocation.parse(id),
+                    lang,
+                    requisites.stream().map(ResourceLocation::parse).toList(),
+                    new ItemStackIcon(ResourceLocation.parse(icon)),
+                    invisible
+            ));
         });
-        seal.setRequisites(reqs);
-
-        //TODO IMPROVE
-        seal.setIcon(new ItemStackIcon(new ResourceLocation(jsonObject.getAsJsonObject("icon").getAsJsonObject("value").getAsJsonPrimitive("stack").getAsString())));
-
-        if (jsonObject.get("invisible").getAsBoolean()) seal.setInvisible();
-        return seal;
     }
 
     @Override
-    public @Nullable SealInfo fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buf) {
-        var seal = new SealInfo(resourceLocation);
-        seal.setSealLangKey(buf.readUtf());
-        int amount = buf.readInt();
-        for (int i = 0; i < amount; i++) {
-            seal.getRequisites().add(buf.readResourceLocation());
-        }
-        //TODO IMPROVE
-        seal.setIcon(new ItemStackIcon(buf.readResourceLocation()));
-
-        if (buf.readBoolean()) seal.setInvisible();
-
-        return seal;
+    public MapCodec<SealInfo> codec() {
+        return mapCodec;
     }
 
     @Override
-    public void toNetwork(FriendlyByteBuf buf, SealInfo sealInfo) {
-        buf.writeUtf(sealInfo.getSealLangKey());
-        buf.writeInt(sealInfo.getRequisites().size());
-        sealInfo.getRequisites().forEach(buf::writeResourceLocation);
-
-        //TODO IMPROVE
-        buf.writeResourceLocation(((ItemStackIcon) sealInfo.getIcon()).getStack());
-
-        buf.writeBoolean(sealInfo.isInvisible());
-
+    public StreamCodec<RegistryFriendlyByteBuf, SealInfo> streamCodec() {
+        return this.codec;
     }
+
 }

@@ -4,11 +4,12 @@ import com.buuz135.seals.Seals;
 import com.buuz135.seals.client.icon.ItemStackIcon;
 import com.buuz135.seals.datapack.SealInfo;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -26,10 +27,10 @@ public class SealManager {
         return seals;
     }
 
-    public void setSeals(List<SealInfo> seals) {
+    public void setSeals(Level level, List<SealInfo> seals) {
         this.seals.clear();
         this.seals.addAll(seals);
-        SealInfo info = new SealInfo(new ResourceLocation("seals:machinist")) {
+        SealInfo info = new SealInfo(ResourceLocation.parse("seals:machinist")) {
             @Override
             public boolean hasAchievedSeal(ServerPlayer entity) {
                 return entity.getUUID().toString().equals("d28b7061-fb92-4064-90fb-7e02b95a72a6");
@@ -43,9 +44,9 @@ public class SealManager {
         info.setSealLangKey("machinist");
         //info.setRequisites(new ResourceLocation[]{new ResourceLocation("minecraft:story/root")});
         info.setInvisible();
-        info.setIcon(new ItemStackIcon(ForgeRegistries.BLOCKS.getKey(Blocks.FURNACE)));
+        info.setIcon(new ItemStackIcon(level.registryAccess().registryOrThrow(Registries.BLOCK).getKey(Blocks.FURNACE)));
         this.seals.add(info);
-        info = new SealInfo(new ResourceLocation("seals:patreon")) {
+        info = new SealInfo(ResourceLocation.parse("seals:patreon")) {
             @Override
             public boolean hasAchievedSeal(ServerPlayer entity) {
                 return Seals.PATREONS.stream().anyMatch(uuid -> uuid.equals(entity.getUUID()));
@@ -59,7 +60,7 @@ public class SealManager {
         //info.setRequisites(new ResourceLocation[]{new ResourceLocation("minecraft:story/root")});
         info.setSealLangKey("munificent");
         info.setInvisible();
-        info.setIcon(new ItemStackIcon(ForgeRegistries.ITEMS.getKey(Items.NETHER_STAR)));
+        info.setIcon(new ItemStackIcon(level.registryAccess().registryOrThrow(Registries.ITEM).getKey(Items.NETHER_STAR)));
         this.seals.add(info);
     }
 

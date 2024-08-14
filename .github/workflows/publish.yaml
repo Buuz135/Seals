@@ -31,8 +31,10 @@ jobs:
           files-primary: build/libs/!(*-@(dev|sources)).jar
           files-secondary: build/libs/*-@(dev|sources).jar
           version-type: beta
-          loaders: forge
-          game-versions: 1.20.1
-          java: 17
+          loaders: neoforge
+          game-versions: |
+            1.21
+            1.21.1
+          java: 21
           name: ""
-          changelog: "https://github.com/Buuz135/Seals/commits/1.20"
+          changelog: "https://github.com/Buuz135/Seals/commits/1.21"

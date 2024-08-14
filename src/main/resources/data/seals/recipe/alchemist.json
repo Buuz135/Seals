@@ -1,15 +1,11 @@
 {
+  "id": "seals:alchemist",
   "lang_key": "alchemist",
   "requisites": [
     "minecraft:nether/all_effects",
     "minecraft:nether/all_potions"
   ],
-  "icon": {
-    "type": "item",
-    "value": {
-      "stack": "minecraft:brewing_stand"
-    }
-  },
+  "icon": "minecraft:brewing_stand",
   "invisible": false,
   "type": "seals:seal"
 }

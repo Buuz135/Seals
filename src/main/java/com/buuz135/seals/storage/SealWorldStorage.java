@@ -1,6 +1,7 @@
 package com.buuz135.seals.storage;
 
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -19,11 +20,7 @@ public class SealWorldStorage extends SavedData {
     }
 
     public static SealWorldStorage get(ServerLevel serverWorld) {
-        return serverWorld.getDataStorage().computeIfAbsent(compoundTag -> {
-            var data = new SealWorldStorage();
-            data.read(compoundTag);
-            return data;
-        }, SealWorldStorage::new, NAME);
+        return serverWorld.getDataStorage().computeIfAbsent(new Factory<SealWorldStorage>(SealWorldStorage::new, (compoundTag, provider) -> new SealWorldStorage().read(compoundTag)), NAME);
     }
 
     public void put(UUID uuid, ResourceLocation resourceLocation) {
@@ -40,16 +37,18 @@ public class SealWorldStorage extends SavedData {
     }
 
 
-    public void read(CompoundTag nbt) {
+    public SealWorldStorage read(CompoundTag nbt) {
         seals.clear();
         for (String name : nbt.getAllKeys()) {
-            seals.put(name, new ResourceLocation(nbt.getString(name)));
+            seals.put(name, ResourceLocation.parse(nbt.getString(name)));
         }
+        return this;
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound) {
+    public CompoundTag save(CompoundTag compound, HolderLookup.Provider provider) {
         seals.forEach((uuid, resourceLocation) -> compound.putString(uuid, resourceLocation.toString()));
         return compound;
     }
+
 }

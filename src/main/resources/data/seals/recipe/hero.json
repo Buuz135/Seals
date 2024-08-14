@@ -1,16 +1,12 @@
 {
+  "id": "seals:hero",
   "lang_key": "hero",
   "requisites": [
     "minecraft:adventure/hero_of_the_village",
     "minecraft:adventure/kill_all_mobs",
     "minecraft:adventure/arbalistic"
   ],
-  "icon": {
-    "type": "item",
-    "value": {
-      "stack": "minecraft:shield"
-    }
-  },
+  "icon": "minecraft:shield",
   "invisible": false,
   "type": "seals:seal"
 }

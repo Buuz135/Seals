@@ -22,7 +22,7 @@ public class ClientSealWorldStorage {
     public void deserialize(CompoundTag nbt) {
         clientSeals.clear();
         for (String name : nbt.getAllKeys()) {
-            clientSeals.put(name, new ResourceLocation(nbt.getString(name)));
+            clientSeals.put(name, ResourceLocation.parse(nbt.getString(name)));
         }
     }
 }

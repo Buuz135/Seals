@@ -1,0 +1,12 @@
+{
+  "id": "seals:vault_hunter",
+  "lang_key": "vault_hunter",
+  "requisites": [
+    "minecraft:adventure/minecraft_trials_edition",
+    "minecraft:adventure/under_lock_and_key",
+    "minecraft:adventure/revaulting"
+  ],
+  "icon": "minecraft:ominous_trial_key",
+  "invisible": false,
+  "type": "seals:seal"
+}

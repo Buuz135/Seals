@@ -1,0 +1,11 @@
+{
+  "id": "seals:blacksmith",
+  "lang_key": "blacksmith",
+  "requisites": [
+    "minecraft:adventure/trim_with_any_armor_pattern",
+    "minecraft:adventure/trim_with_all_exclusive_armor_patterns"
+  ],
+  "icon": "minecraft:silence_armor_trim_smithing_template",
+  "invisible": false,
+  "type": "seals:seal"
+}

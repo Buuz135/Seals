@@ -1,13 +1,29 @@
 package com.buuz135.seals.network;
 
+import com.buuz135.seals.Seals;
 import com.buuz135.seals.storage.ClientSealWorldStorage;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
 
-public class ClientSyncSealsMessage implements IMessage {
+public class ClientSyncSealsMessage implements CustomPacketPayload, IMessage {
+
+    public static CustomPacketPayload.Type<ClientSyncSealsMessage> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Seals.MOD_ID, "sync_seals"));
+    public static StreamCodec<? super RegistryFriendlyByteBuf, ClientSyncSealsMessage> CODEC = new StreamCodec<>() {
+        @Override
+        public ClientSyncSealsMessage decode(RegistryFriendlyByteBuf object) {
+            return new ClientSyncSealsMessage(object.readNbt());
+        }
+
+        @Override
+        public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, ClientSyncSealsMessage sealRequestMessage) {
+            registryFriendlyByteBuf.writeNbt(sealRequestMessage.sync);
+        }
+    };
 
     private CompoundTag sync;
 
@@ -19,21 +35,14 @@ public class ClientSyncSealsMessage implements IMessage {
     }
 
     @Override
-    public ClientSyncSealsMessage fromBytes(FriendlyByteBuf buf) {
-        sync = buf.readNbt();
-        return this;
-    }
-
-    @Override
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeNbt(sync);
-    }
-
-    @Override
-    public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
-        contextSupplier.get().enqueueWork(() -> {
+    public void handle(IPayloadContext contextSupplier) {
+        contextSupplier.enqueueWork(() -> {
             ClientSealWorldStorage.SEALS.deserialize(sync);
         });
-        contextSupplier.get().setPacketHandled(true);
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

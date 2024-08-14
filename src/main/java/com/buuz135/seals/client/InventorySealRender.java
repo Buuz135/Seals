@@ -7,16 +7,17 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT)
+
+@EventBusSubscriber(value = Dist.CLIENT)
 public class InventorySealRender {
 
     @SubscribeEvent
-    public static void background(ScreenEvent.BackgroundRendered event) {
+    public static void background(ScreenEvent.Render.Post event) {
         if (event.getScreen() instanceof InventoryScreen) {
             var guiGraphics = event.getGuiGraphics();
             if (ClientSealWorldStorage.SEALS.getClientSeals().containsKey(Minecraft.getInstance().player.getUUID().toString())) {
