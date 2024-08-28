@@ -110,10 +110,10 @@ public class Seals {
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onGuiOpen(ScreenEvent.Init.Pre event) {
-        if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
+        if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().contains("BetterAdvancementsScreen")) {
             List<SealInfo> seals = new ArrayList<>(SEAL_MANAGER.getSeals());
             seals.removeIf(sealInfo -> sealInfo.isInvisible() && !sealInfo.hasAchievedSealClient(Minecraft.getInstance().player));
-            int guiLeft = 35 - 26;
+            int guiLeft = 35 - 31;
             int guiTop = 30;
             int number = event.getScreen().height / 26;
             for (int i = 0; i < seals.size(); i++) {
@@ -126,9 +126,9 @@ public class Seals {
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onRender(ScreenEvent.Render.Post event) {
-        if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().equalsIgnoreCase("betteradvancements.gui.BetterAdvancementsScreen")) {
+        if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().contains("BetterAdvancementsScreen")) {
             Screen screen = event.getScreen();
-            event.getGuiGraphics().drawString(Minecraft.getInstance().font, Component.translatable("seals.seals").getString(), 8, 10, 0xFFFFFF, false);
+            event.getGuiGraphics().drawString(Minecraft.getInstance().font, Component.translatable("seals.seals").getString(), 2, 10, 0xFFFFFF, false);
             screen.children().stream().filter(widget -> widget instanceof SealButton).forEach(widget -> ((SealButton) widget).render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick()));
         }
     }
