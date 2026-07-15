@@ -1,0 +1,13 @@
+{
+  "id": "seals:daredevil",
+  "lang_key": "daredevil",
+  "requisites": [
+    "minecraft:adventure/fall_from_world_height",
+    "minecraft:adventure/who_needs_rockets",
+    "minecraft:adventure/very_very_frightening",
+    "minecraft:nether/ride_strider_in_overworld_lava"
+  ],
+  "icon": "minecraft:totem_of_undying",
+  "invisible": false,
+  "type": "seals:seal"
+}

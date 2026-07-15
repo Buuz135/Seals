@@ -1,0 +1,13 @@
+{
+  "id": "seals:beastmaster",
+  "lang_key": "beastmaster",
+  "requisites": [
+    "minecraft:husbandry/whole_pack",
+    "minecraft:husbandry/leash_all_frog_variants",
+    "minecraft:husbandry/froglights",
+    "minecraft:husbandry/kill_axolotl_target"
+  ],
+  "icon": "minecraft:wolf_armor",
+  "invisible": false,
+  "type": "seals:seal"
+}

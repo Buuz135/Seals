@@ -1,0 +1,13 @@
+{
+  "id": "seals:dragon_slayer",
+  "lang_key": "dragon_slayer",
+  "requisites": [
+    "minecraft:end/kill_dragon",
+    "minecraft:end/dragon_egg",
+    "minecraft:end/elytra",
+    "minecraft:end/find_end_city"
+  ],
+  "icon": "minecraft:dragon_egg",
+  "invisible": false,
+  "type": "seals:seal"
+}

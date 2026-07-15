@@ -1,0 +1,13 @@
+{
+  "id": "seals:archaeologist",
+  "lang_key": "archaeologist",
+  "requisites": [
+    "minecraft:adventure/salvage_sherd",
+    "minecraft:adventure/craft_decorated_pot_using_only_sherds",
+    "minecraft:husbandry/obtain_sniffer_egg",
+    "minecraft:husbandry/plant_any_sniffer_seed"
+  ],
+  "icon": "minecraft:decorated_pot",
+  "invisible": false,
+  "type": "seals:seal"
+}

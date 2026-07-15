@@ -1,0 +1,13 @@
+{
+  "id": "seals:sentinel",
+  "lang_key": "sentinel",
+  "requisites": [
+    "minecraft:adventure/summon_iron_golem",
+    "minecraft:adventure/lightning_rod_with_villager_no_fire",
+    "minecraft:adventure/hero_of_the_village",
+    "minecraft:story/cure_zombie_villager"
+  ],
+  "icon": "minecraft:bell",
+  "invisible": false,
+  "type": "seals:seal"
+}

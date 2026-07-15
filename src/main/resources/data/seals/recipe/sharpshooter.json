@@ -1,0 +1,13 @@
+{
+  "id": "seals:sharpshooter",
+  "lang_key": "sharpshooter",
+  "requisites": [
+    "minecraft:adventure/bullseye",
+    "minecraft:adventure/sniper_duel",
+    "minecraft:adventure/two_birds_one_arrow",
+    "minecraft:adventure/ol_betsy"
+  ],
+  "icon": "minecraft:target",
+  "invisible": false,
+  "type": "seals:seal"
+}

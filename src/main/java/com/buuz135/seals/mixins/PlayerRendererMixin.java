@@ -45,8 +45,8 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
                 pose.last().pose().rotate(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
                 pose.translate(0, -0.10, 0);
 
-                pose.translate(Minecraft.getInstance().font.width(Component.translatable("seal." + seal.getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC)) * -0.01f - 0.3, 0, 0);
-                var scale = 0.5f;
+                pose.translate(Minecraft.getInstance().font.width(Component.translatable("seal." + seal.getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC)) * -0.01f - 0.35, 0, 0);
+                var scale = 0.3f;
                 BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(icon.getCachedStack(), Minecraft.getInstance().level, null, 0);
                 if (!model.isGui3d()) {
                     scale = 0.3f;

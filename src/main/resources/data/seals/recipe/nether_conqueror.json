@@ -1,0 +1,13 @@
+{
+  "id": "seals:nether_conqueror",
+  "lang_key": "nether_conqueror",
+  "requisites": [
+    "minecraft:nether/explore_nether",
+    "minecraft:nether/netherite_armor",
+    "minecraft:nether/create_full_beacon",
+    "minecraft:nether/uneasy_alliance"
+  ],
+  "icon": "minecraft:netherite_chestplate",
+  "invisible": false,
+  "type": "seals:seal"
+}

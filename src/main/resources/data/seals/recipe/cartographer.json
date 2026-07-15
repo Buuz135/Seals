@@ -1,0 +1,13 @@
+{
+  "id": "seals:cartographer",
+  "lang_key": "cartographer",
+  "requisites": [
+    "minecraft:adventure/adventuring_time",
+    "minecraft:nether/explore_nether",
+    "minecraft:end/find_end_city",
+    "minecraft:end/enter_end_gateway"
+  ],
+  "icon": "minecraft:filled_map",
+  "invisible": false,
+  "type": "seals:seal"
+}
