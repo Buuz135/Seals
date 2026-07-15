@@ -31,6 +31,7 @@ jobs:
           files-primary: build/libs/!(*-@(dev|sources)).jar
           files-secondary: build/libs/*-@(dev|sources).jar
           version-type: beta
+          environment: client | server
           loaders: neoforge
           game-versions: |
             1.21
