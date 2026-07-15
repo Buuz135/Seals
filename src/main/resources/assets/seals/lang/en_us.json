@@ -16,5 +16,8 @@
   "seal.daredevil": "Daredevil",
   "seal.sentinel": "Sentinel",
   "seal.cartographer": "Cartographer",
-  "seals.seals": "Seals"
+  "seals.seals": "Seals",
+  "seals.open_selection": "Seals",
+  "seals.select": "Select a Seal",
+  "seals.select_hint": "Choose a seal to display beside your name"
 }

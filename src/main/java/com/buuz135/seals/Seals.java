@@ -1,6 +1,6 @@
 package com.buuz135.seals;
 
-import com.buuz135.seals.client.SealButton;
+import com.buuz135.seals.client.SealSelectionScreen;
 import com.buuz135.seals.config.SealManager;
 import com.buuz135.seals.datapack.SealInfo;
 import com.buuz135.seals.datapack.SealInfoSerializer;
@@ -9,6 +9,7 @@ import com.buuz135.seals.network.SealRequestMessage;
 import com.buuz135.seals.storage.SealWorldStorage;
 import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.core.registries.Registries;
@@ -45,9 +46,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Mod("seals")
 public class Seals {
@@ -57,6 +56,7 @@ public class Seals {
     public static final PayloadRegistrar NETWORK = new PayloadRegistrar(MOD_ID);
     private static final Logger LOGGER = LogManager.getLogger();
     public static final List<UUID> PATREONS = new ArrayList<>();
+    private final Map<Screen, Button> advancementSealButtons = new WeakHashMap<>();
 
     public static DeferredRegister<RecipeSerializer<?>> RECIPE_SER = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID);
     public static final DeferredHolder<RecipeSerializer<?>, SealInfoSerializer> EMOJI_RECIPE_SERIALIZER = RECIPE_SER.register("seal", SealInfoSerializer::new);
@@ -111,25 +111,22 @@ public class Seals {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onGuiOpen(ScreenEvent.Init.Pre event) {
         if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().contains("BetterAdvancementsScreen")) {
-            List<SealInfo> seals = new ArrayList<>(SEAL_MANAGER.getSeals());
-            seals.removeIf(sealInfo -> sealInfo.isInvisible() && !sealInfo.hasAchievedSealClient(Minecraft.getInstance().player));
-            int guiLeft = 35 - 31;
-            int guiTop = 30;
-            int number = event.getScreen().height / 26;
-            for (int i = 0; i < seals.size(); i++) {
-                event.addListener(new SealButton(seals.get(i), guiLeft + 26 * ((i / number)), guiTop + 24 * (i % number) - 6, true));
-            }
+            Button button = Button.builder(Component.translatable("seals.open_selection"), press -> Minecraft.getInstance().setScreen(new SealSelectionScreen(event.getScreen())))
+                    .pos(4, event.getScreen().height - 24)
+                    .size(58, 20)
+                    .build();
+            this.advancementSealButtons.put(event.getScreen(), button);
+            event.addListener(button);
         }
 
     }
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onRender(ScreenEvent.Render.Post event) {
-        if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().contains("BetterAdvancementsScreen")) {
-            Screen screen = event.getScreen();
-            event.getGuiGraphics().drawString(Minecraft.getInstance().font, Component.translatable("seals.seals").getString(), 2, 10, 0xFFFFFF, false);
-            screen.children().stream().filter(widget -> widget instanceof SealButton).forEach(widget -> ((SealButton) widget).render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick()));
+    public void onAdvancementsRender(ScreenEvent.Render.Post event) {
+        Button button = this.advancementSealButtons.get(event.getScreen());
+        if (button != null) {
+            button.render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick());
         }
     }
 

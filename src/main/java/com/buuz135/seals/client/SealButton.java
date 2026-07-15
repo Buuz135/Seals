@@ -29,9 +29,10 @@ public class SealButton extends Button {
     private SealInfo info;
     private boolean left;
 
-    public SealButton(SealInfo info, int xIn, int yIn, boolean left) {
+    public SealButton(SealInfo info, int xIn, int yIn, boolean left, Runnable onSelected) {
         super(xIn, yIn, 22, 22, Component.literal(""), press -> {
             PacketDistributor.sendToServer(new SealRequestMessage(info.getSealID()));
+            onSelected.run();
         }, Button.DEFAULT_NARRATION::createNarrationMessage);
         this.info = info;
         this.width = 22;
