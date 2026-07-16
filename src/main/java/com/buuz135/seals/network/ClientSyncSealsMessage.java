@@ -6,13 +6,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 
 public class ClientSyncSealsMessage implements CustomPacketPayload, IMessage {
 
-    public static CustomPacketPayload.Type<ClientSyncSealsMessage> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Seals.MOD_ID, "sync_seals"));
+    public static CustomPacketPayload.Type<ClientSyncSealsMessage> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(Seals.MOD_ID, "sync_seals"));
     public static StreamCodec<? super RegistryFriendlyByteBuf, ClientSyncSealsMessage> CODEC = new StreamCodec<>() {
         @Override
         public ClientSyncSealsMessage decode(RegistryFriendlyByteBuf object) {

@@ -1,6 +1,6 @@
 package com.buuz135.seals;
 
-import com.buuz135.seals.client.SealSelectionScreen;
+import com.buuz135.seals.client.SealsClient;
 import com.buuz135.seals.config.SealManager;
 import com.buuz135.seals.datapack.SealInfo;
 import com.buuz135.seals.datapack.SealInfoSerializer;
@@ -8,32 +8,22 @@ import com.buuz135.seals.network.ClientSyncSealsMessage;
 import com.buuz135.seals.network.SealRequestMessage;
 import com.buuz135.seals.storage.SealWorldStorage;
 import com.google.gson.JsonParser;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.client.event.RecipesUpdatedEvent;
-import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -46,7 +36,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Mod("seals")
 public class Seals {
@@ -56,22 +48,16 @@ public class Seals {
     public static final PayloadRegistrar NETWORK = new PayloadRegistrar(MOD_ID);
     private static final Logger LOGGER = LogManager.getLogger();
     public static final List<UUID> PATREONS = new ArrayList<>();
-    private final Map<Screen, Button> advancementSealButtons = new WeakHashMap<>();
 
     public static DeferredRegister<RecipeSerializer<?>> RECIPE_SER = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID);
-    public static final DeferredHolder<RecipeSerializer<?>, SealInfoSerializer> EMOJI_RECIPE_SERIALIZER = RECIPE_SER.register("seal", SealInfoSerializer::new);
-
-    public static DeferredRegister<RecipeType<?>> RECIPE_TYPE = DeferredRegister.create(Registries.RECIPE_TYPE, MOD_ID);
-    public static final DeferredHolder<RecipeType<?>, RecipeType<SealInfo>> SEAL_RECIPE_TYPE = RECIPE_TYPE.register("seal", () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(MOD_ID, "seal")));
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<SealInfo>> EMOJI_RECIPE_SERIALIZER = RECIPE_SER.register("seal", SealInfoSerializer::create);
 
     public Seals(IEventBus modEventBus, ModContainer modContainer) {
-        if (FMLEnvironment.dist.isClient()) {
-            modEventBus.addListener(this::doClientStuff);
+        if (FMLEnvironment.getDist() == Dist.CLIENT) {
+            SealsClient.init();
         }
 
         RECIPE_SER.register(modEventBus);
-        RECIPE_TYPE.register(modEventBus);
-
         // Register ourselves for server and other game events we are interested in
         NeoForge.EVENT_BUS.register(this);
 
@@ -88,49 +74,30 @@ public class Seals {
 
     }
 
-    private void doClientStuff(final FMLClientSetupEvent event) {
-        //ClientAdvancements advancementManager = new ClientAdvancements(Minecraft.getInstance());
+    public static List<SealInfo> getSealRecipes(RecipeMap recipeMap) {
+        return recipeMap.values().stream()
+                .map(RecipeHolder::value)
+                .filter(SealInfo.class::isInstance)
+                .map(SealInfo.class::cast)
+                .toList();
     }
 
-    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
-    public void onRecipesUpdated(RecipesUpdatedEvent event) {
-        SEAL_MANAGER.setSeals(Minecraft.getInstance().level, event.getRecipeManager().getAllRecipesFor(Seals.SEAL_RECIPE_TYPE.get()).stream().map(RecipeHolder::value).toList());
+    public void onDatapackSync(OnDatapackSyncEvent event) {
+        // SealInfo is a CustomRecipe, so it is synchronized as a crafting recipe.
+        event.sendRecipes(RecipeType.CRAFTING);
     }
 
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         Level world = event.getEntity().level();
         if (world instanceof ServerLevel && event.getEntity() instanceof ServerPlayer serverPlayer) {
-            serverPlayer.connection.send(new ClientSyncSealsMessage(SealWorldStorage.get((ServerLevel) world).save(new CompoundTag(), null)));
+            world.getServer().getRecipeManager().getRecipes().forEach(recipe -> System.out.println(recipe.value().getType().toString()));
+            serverPlayer.connection.send(new ClientSyncSealsMessage(SealWorldStorage.get((ServerLevel) world).toTag()));
         }
     }
 
-
-    @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onGuiOpen(ScreenEvent.Init.Pre event) {
-        if (event.getScreen() instanceof AdvancementsScreen || event.getScreen().getClass().getName().contains("BetterAdvancementsScreen")) {
-            Button button = Button.builder(Component.translatable("seals.open_selection"), press -> Minecraft.getInstance().setScreen(new SealSelectionScreen(event.getScreen())))
-                    .pos(4, event.getScreen().height - 24)
-                    .size(58, 20)
-                    .build();
-            this.advancementSealButtons.put(event.getScreen(), button);
-            event.addListener(button);
-        }
-
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onAdvancementsRender(ScreenEvent.Render.Post event) {
-        Button button = this.advancementSealButtons.get(event.getScreen());
-        if (button != null) {
-            button.render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick());
-        }
-    }
-
-    /*@OnlyIn(Dist.CLIENT)
+    /*
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onRender(RenderNameTagEvent event) {
         var entity = event.getEntity();

@@ -25,11 +25,11 @@ public class InventorySealRender {
                 if (seal != null) {
                     String sealName = Component.translatable("seal." + seal.getSealLangKey()).getString();
                     String playerName = Minecraft.getInstance().player.getName().getString();
-                    guiGraphics.drawString(Minecraft.getInstance().font, ChatFormatting.LIGHT_PURPLE + sealName,
-                            ((InventoryScreen) event.getScreen()).getGuiLeft() + ((InventoryScreen) event.getScreen()).getXSize() / 2F - Minecraft.getInstance().font.width(sealName) / 2F,
+                    guiGraphics.text(Minecraft.getInstance().font, ChatFormatting.LIGHT_PURPLE + sealName,
+                            (int) (((InventoryScreen) event.getScreen()).getGuiLeft() + ((InventoryScreen) event.getScreen()).getXSize() / 2F - Minecraft.getInstance().font.width(sealName) / 2F),
                             ((InventoryScreen) event.getScreen()).getGuiTop() - Minecraft.getInstance().font.lineHeight, 0xFFFFFF, false);
-                    guiGraphics.drawString(Minecraft.getInstance().font, playerName,
-                            ((InventoryScreen) event.getScreen()).getGuiLeft() + ((InventoryScreen) event.getScreen()).getXSize() / 2F - Minecraft.getInstance().font.width(playerName) / 2F,
+                    guiGraphics.text(Minecraft.getInstance().font, playerName,
+                            (int) (((InventoryScreen) event.getScreen()).getGuiLeft() + ((InventoryScreen) event.getScreen()).getXSize() / 2F - Minecraft.getInstance().font.width(playerName) / 2F),
                             ((InventoryScreen) event.getScreen()).getGuiTop() - Minecraft.getInstance().font.lineHeight * 2, 0xFFFFFF, false);
                 }
             }

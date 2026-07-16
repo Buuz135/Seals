@@ -1,29 +1,38 @@
 package com.buuz135.seals.storage;
 
 
-import net.minecraft.core.HolderLookup;
+import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.HashMap;
 import java.util.UUID;
 
 public class SealWorldStorage extends SavedData {
 
-    public static String NAME = "Seals";
-    private HashMap<String, ResourceLocation> seals;
+    private static final SavedDataType<SealWorldStorage> TYPE = new SavedDataType<>(
+            Identifier.fromNamespaceAndPath("seals", "seals"),
+            SealWorldStorage::new,
+            Codec.unboundedMap(Codec.STRING, Identifier.CODEC).xmap(SealWorldStorage::new, storage -> storage.seals)
+    );
+    private HashMap<String, Identifier> seals;
 
     public SealWorldStorage() {
         this.seals = new HashMap<>();
     }
 
-    public static SealWorldStorage get(ServerLevel serverWorld) {
-        return serverWorld.getDataStorage().computeIfAbsent(new Factory<SealWorldStorage>(SealWorldStorage::new, (compoundTag, provider) -> new SealWorldStorage().read(compoundTag)), NAME);
+    private SealWorldStorage(java.util.Map<String, Identifier> seals) {
+        this.seals = new HashMap<>(seals);
     }
 
-    public void put(UUID uuid, ResourceLocation resourceLocation) {
+    public static SealWorldStorage get(ServerLevel serverWorld) {
+        return serverWorld.getDataStorage().computeIfAbsent(TYPE);
+    }
+
+    public void put(UUID uuid, Identifier resourceLocation) {
         if (this.seals.containsKey(uuid.toString()) && this.seals.get(uuid.toString()).equals(resourceLocation)) {
             this.seals.remove(uuid.toString());
         } else {
@@ -32,23 +41,14 @@ public class SealWorldStorage extends SavedData {
         this.setDirty();
     }
 
-    public HashMap<String, ResourceLocation> getSeals() {
+    public HashMap<String, Identifier> getSeals() {
         return seals;
     }
 
-
-    public SealWorldStorage read(CompoundTag nbt) {
-        seals.clear();
-        for (String name : nbt.getAllKeys()) {
-            seals.put(name, ResourceLocation.parse(nbt.getString(name)));
-        }
-        return this;
-    }
-
-    @Override
-    public CompoundTag save(CompoundTag compound, HolderLookup.Provider provider) {
-        seals.forEach((uuid, resourceLocation) -> compound.putString(uuid, resourceLocation.toString()));
-        return compound;
+    public CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
+        seals.forEach((uuid, seal) -> tag.putString(uuid, seal.toString()));
+        return tag;
     }
 
 }

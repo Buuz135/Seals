@@ -5,7 +5,8 @@ import com.buuz135.seals.datapack.SealInfo;
 import com.buuz135.seals.storage.ClientSealWorldStorage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
@@ -57,19 +58,19 @@ public class SealSelectionScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         guiGraphics.fill(this.panelLeft - 1, this.panelTop - 1, this.panelLeft + PANEL_WIDTH + 1, this.panelTop + this.panelHeight + 1, 0xFFC6A25A);
         guiGraphics.fill(this.panelLeft, this.panelTop, this.panelLeft + PANEL_WIDTH, this.panelTop + this.panelHeight, 0xE0181420);
         this.renderEquippedSeal(guiGraphics);
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, this.panelTop + 12, 0xFFFFFF);
-        guiGraphics.drawCenteredString(this.font, Component.translatable("seals.select_hint").withStyle(ChatFormatting.GRAY), this.width / 2, this.panelTop + 27, 0xA0A0A0);
+        var text = guiGraphics.textRenderer();
+        text.accept(TextAlignment.CENTER, this.width / 2, this.panelTop + 12, this.title.copy().withStyle(ChatFormatting.WHITE));
+        text.accept(TextAlignment.CENTER, this.width / 2, this.panelTop + 27, Component.translatable("seals.select_hint").withStyle(ChatFormatting.GRAY));
         for (Renderable renderable : this.renderables) {
-            renderable.render(guiGraphics, mouseX, mouseY, partialTick);
+            renderable.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
         }
     }
 
-    private void renderEquippedSeal(GuiGraphics guiGraphics) {
+    private void renderEquippedSeal(GuiGraphicsExtractor guiGraphics) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) {
             return;
@@ -79,9 +80,9 @@ public class SealSelectionScreen extends Screen {
         SealInfo selectedSeal = selectedSealId == null ? null : Seals.SEAL_MANAGER.getSeal(selectedSealId);
         if (selectedSeal != null) {
             Component sealName = Component.translatable("seal." + selectedSeal.getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE);
-            guiGraphics.drawCenteredString(this.font, sealName, this.width / 2, this.panelTop - this.font.lineHeight, 0xFFFFFF);
+            guiGraphics.textRenderer().accept(TextAlignment.CENTER, this.width / 2, this.panelTop - this.font.lineHeight, sealName);
         }
-        guiGraphics.drawCenteredString(this.font, minecraft.player.getName(), this.width / 2, this.panelTop - this.font.lineHeight * 2, 0xFFFFFF);
+        guiGraphics.textRenderer().accept(TextAlignment.CENTER, this.width / 2, this.panelTop - this.font.lineHeight * 2, minecraft.player.getName().copy().withStyle(ChatFormatting.WHITE));
     }
 
     @Override

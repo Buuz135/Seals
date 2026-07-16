@@ -5,7 +5,7 @@ import com.buuz135.seals.client.icon.ItemStackIcon;
 import com.buuz135.seals.datapack.SealInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -30,7 +30,7 @@ public class SealManager {
     public void setSeals(Level level, List<SealInfo> seals) {
         this.seals.clear();
         this.seals.addAll(seals);
-        SealInfo info = new SealInfo(ResourceLocation.parse("seals:machinist")) {
+        SealInfo info = new SealInfo(Identifier.parse("seals:machinist")) {
             @Override
             public boolean hasAchievedSeal(ServerPlayer entity) {
                 return entity.getUUID().toString().equals("d28b7061-fb92-4064-90fb-7e02b95a72a6");
@@ -42,11 +42,11 @@ public class SealManager {
             }
         };
         info.setSealLangKey("machinist");
-        //info.setRequisites(new ResourceLocation[]{new ResourceLocation("minecraft:story/root")});
+        //info.setRequisites(new Identifier[]{new Identifier("minecraft:story/root")});
         info.setInvisible();
-        info.setIcon(new ItemStackIcon(level.registryAccess().registryOrThrow(Registries.BLOCK).getKey(Blocks.FURNACE)));
+        info.setIcon(new ItemStackIcon(level.registryAccess().lookupOrThrow(Registries.BLOCK).getKey(Blocks.FURNACE)));
         this.seals.add(info);
-        info = new SealInfo(ResourceLocation.parse("seals:patreon")) {
+        info = new SealInfo(Identifier.parse("seals:patreon")) {
             @Override
             public boolean hasAchievedSeal(ServerPlayer entity) {
                 return Seals.PATREONS.stream().anyMatch(uuid -> uuid.equals(entity.getUUID()));
@@ -57,15 +57,18 @@ public class SealManager {
                 return Seals.PATREONS.stream().anyMatch(uuid -> uuid.equals(entity.getUUID()));
             }
         };
-        //info.setRequisites(new ResourceLocation[]{new ResourceLocation("minecraft:story/root")});
+        //info.setRequisites(new Identifier[]{new Identifier("minecraft:story/root")});
         info.setSealLangKey("munificent");
         info.setInvisible();
-        info.setIcon(new ItemStackIcon(level.registryAccess().registryOrThrow(Registries.ITEM).getKey(Items.NETHER_STAR)));
+        info.setIcon(new ItemStackIcon(level.registryAccess().lookupOrThrow(Registries.ITEM).getKey(Items.NETHER_STAR)));
         this.seals.add(info);
+        for (SealInfo seal : this.seals) {
+            System.out.println(seal.getSealLangKey());
+        }
     }
 
     @Nullable
-    public SealInfo getSeal(ResourceLocation resourceLocation) {
+    public SealInfo getSeal(Identifier resourceLocation) {
         for (SealInfo seal : seals) {
             if (seal.getSealID().equals(resourceLocation)) return seal;
         }

@@ -1,7 +1,7 @@
 package com.buuz135.seals.storage;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 
@@ -9,20 +9,20 @@ public class ClientSealWorldStorage {
 
     public static final ClientSealWorldStorage SEALS = new ClientSealWorldStorage();
 
-    private final HashMap<String, ResourceLocation> clientSeals;
+    private final HashMap<String, Identifier> clientSeals;
 
     public ClientSealWorldStorage() {
         this.clientSeals = new HashMap<>();
     }
 
-    public HashMap<String, ResourceLocation> getClientSeals() {
+    public HashMap<String, Identifier> getClientSeals() {
         return clientSeals;
     }
 
     public void deserialize(CompoundTag nbt) {
         clientSeals.clear();
-        for (String name : nbt.getAllKeys()) {
-            clientSeals.put(name, ResourceLocation.parse(nbt.getString(name)));
+        for (String name : nbt.keySet()) {
+            clientSeals.put(name, Identifier.parse(nbt.getStringOr(name, "")));
         }
     }
 }

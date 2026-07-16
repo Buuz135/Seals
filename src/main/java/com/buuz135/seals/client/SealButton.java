@@ -1,85 +1,58 @@
 package com.buuz135.seals.client;
 
 import com.buuz135.seals.Seals;
+import com.buuz135.seals.client.icon.ClientIconRenderer;
 import com.buuz135.seals.datapack.SealInfo;
 import com.buuz135.seals.network.SealRequestMessage;
-import com.buuz135.seals.storage.ClientSealWorldStorage;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraft.resources.Identifier;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class SealButton extends Button {
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Seals.MOD_ID, "textures/gui/seal_button.png");
+    private final SealInfo info;
+    private final boolean left;
+    private final Runnable onSelected;
 
-    private static Color SELECTED = new Color(0xffcc00);
-    private static Color COMPLETED = new Color(0x00ff15);
-
-    private SealInfo info;
-    private boolean left;
-
-    public SealButton(SealInfo info, int xIn, int yIn, boolean left, Runnable onSelected) {
-        super(xIn, yIn, 22, 22, Component.literal(""), press -> {
-            PacketDistributor.sendToServer(new SealRequestMessage(info.getSealID()));
-            onSelected.run();
-        }, Button.DEFAULT_NARRATION::createNarrationMessage);
+    public SealButton(SealInfo info, int x, int y, boolean left, Runnable onSelected) {
+        super(x, y, 22, 22, Component.empty(), button -> {
+        }, Button.DEFAULT_NARRATION);
         this.info = info;
-        this.width = 22;
-        this.height = 22;
-        this.active = true;
         this.left = left;
+        this.onSelected = onSelected;
     }
-
-
 
     @Override
-    public void renderWidget(GuiGraphics guiGraphics, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-        Minecraft minecraft = Minecraft.getInstance();
-        Font fontrenderer = minecraft.font;
-        RenderSystem.setShaderTexture(0, ResourceLocation.fromNamespaceAndPath(Seals.MOD_ID, "textures/gui/seal_button.png"));
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        RenderSystem.enableBlend();
-        //RenderSystem.disableLighting();
-        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        if (ClientSealWorldStorage.SEALS.getClientSeals().containsKey(Minecraft.getInstance().player.getUUID().toString()) && ClientSealWorldStorage.SEALS.getClientSeals().get(Minecraft.getInstance().player.getUUID().toString()).equals(info.getSealID())) {
-            RenderSystem.setShaderColor(SELECTED.getRed() / 255f, SELECTED.getGreen() / 255f, SELECTED.getBlue() / 255f, this.alpha);
-        }
-        guiGraphics.blit(ResourceLocation.fromNamespaceAndPath(Seals.MOD_ID, "textures/gui/seal_button.png"), this.getX(), this.getY(), 0, 0, 22, 22, 22, 22);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1);
-        if (info.getIcon() != null) info.getIcon().drawIcon(guiGraphics, this.getX(), this.getY());
-        if (isHovered()) {
-            List<String> tooltip = new ArrayList<>();
-            tooltip.add(ChatFormatting.LIGHT_PURPLE + Component.translatable("seal." + info.getSealLangKey()).getString());
-            var clientAdvancements = minecraft.player.connection.getAdvancements();
-            for (ResourceLocation requisite : info.getRequisites()) {
-                var advancement = minecraft.player.connection.getAdvancements().getTree().get(requisite);
-                if (advancement != null) {
-                    boolean completed = false;
-                    if (clientAdvancements.progress.containsKey(advancement.holder()) && clientAdvancements.progress.get(advancement.holder()).isDone()) {
-                        completed = true;
-                    }
-                    tooltip.add(ChatFormatting.GOLD + "- " + (completed ? ChatFormatting.GREEN : ChatFormatting.RED) + advancement.advancement().display().get().getTitle().getString());
-                } else {
-                    tooltip.add(ChatFormatting.GOLD + "- " + ChatFormatting.RED + "??????");
-                }
-            }
-            guiGraphics.pose().translate(0, 0, 300);
-            guiGraphics.renderTooltip(Minecraft.getInstance().font, tooltip.stream().map(s -> Component.literal(s)).collect(Collectors.toList()), Optional.empty(), left ? this.getX() + 18 : this.getX() + 7, this.getY() + (tooltip.size() / 2) + fontrenderer.lineHeight);
-            guiGraphics.pose().translate(0, 0, -300);
-        }
+    public void onPress(InputWithModifiers input) {
+        ClientPacketDistributor.sendToServer(new SealRequestMessage(info.getSealID()));
+        onSelected.run();
     }
 
-
+    @Override
+    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, getX(), getY(), 0, 0, 22, 22, 22, 22);
+        if (info.getIcon() != null)
+            ClientIconRenderer.draw((com.buuz135.seals.client.icon.ItemStackIcon) info.getIcon(), graphics, getX(), getY());
+        if (isHovered()) {
+            Minecraft minecraft = Minecraft.getInstance();
+            List<Component> tooltip = new ArrayList<>();
+            tooltip.add(Component.translatable("seal." + info.getSealLangKey()).withStyle(ChatFormatting.LIGHT_PURPLE));
+            var advancements = minecraft.player.connection.getAdvancements();
+            for (Identifier requisite : info.getRequisites()) {
+                var advancement = advancements.getTree().get(requisite);
+                boolean complete = advancement != null && advancements.progress.containsKey(advancement.holder()) && advancements.progress.get(advancement.holder()).isDone();
+                tooltip.add(advancement == null ? Component.literal("- ??????").withStyle(ChatFormatting.GOLD, ChatFormatting.RED) : advancement.advancement().display().get().getTitle().copy().withStyle(ChatFormatting.GOLD, complete ? ChatFormatting.GREEN : ChatFormatting.RED));
+            }
+            graphics.setTooltipForNextFrame(minecraft.font, tooltip, java.util.Optional.empty(), left ? getX() + 18 : getX() + 7, getY() + minecraft.font.lineHeight);
+        }
+    }
 }

@@ -3,11 +3,12 @@ package com.buuz135.seals.datapack;
 import com.buuz135.seals.Seals;
 import com.buuz135.seals.client.icon.ItemStackIcon;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
@@ -15,21 +16,21 @@ import java.util.List;
 
 public class SealInfo extends CustomRecipe {
 
-    private ResourceLocation sealID;
+    private Identifier sealID;
     private String sealLangKey;
-    private List<ResourceLocation> requisites;
+    private List<Identifier> requisites;
     private ItemStackIcon icon;
     private boolean invisible;
 
-    public SealInfo(ResourceLocation sealID) {
-        super(CraftingBookCategory.MISC);
+    public SealInfo(Identifier sealID) {
+        super();
         this.sealID = sealID;
         this.requisites = new ArrayList<>();
         this.invisible = false;
     }
 
-    public SealInfo(ResourceLocation sealID, String sealLangKey, List<ResourceLocation> requisites, ItemStackIcon icon, boolean invisible) {
-        super(CraftingBookCategory.MISC);
+    public SealInfo(Identifier sealID, String sealLangKey, List<Identifier> requisites, ItemStackIcon icon, boolean invisible) {
+        super();
         this.sealID = sealID;
         this.sealLangKey = sealLangKey;
         this.requisites = requisites;
@@ -37,11 +38,11 @@ public class SealInfo extends CustomRecipe {
         this.invisible = invisible;
     }
 
-    public List<ResourceLocation> getRequisites() {
+    public List<Identifier> getRequisites() {
         return requisites;
     }
 
-    public void setRequisites(List<ResourceLocation> requisites) {
+    public void setRequisites(List<Identifier> requisites) {
         this.requisites = requisites;
     }
 
@@ -61,7 +62,7 @@ public class SealInfo extends CustomRecipe {
         this.sealLangKey = sealLangKey;
     }
 
-    public ResourceLocation getSealID() {
+    public Identifier getSealID() {
         return sealID;
     }
 
@@ -83,7 +84,7 @@ public class SealInfo extends CustomRecipe {
 
     public boolean hasAchievedSeal(ServerPlayer entity) {
         int completed = 0;
-        for (ResourceLocation requisite : this.getRequisites()) {
+        for (Identifier requisite : this.getRequisites()) {
             var advancement = entity.level().getServer().getAdvancements().get(requisite);
             if (advancement != null && entity.getAdvancements().getOrStartProgress(advancement).isDone()) {
                 ++completed;
@@ -98,29 +99,13 @@ public class SealInfo extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingInput craftingInput, HolderLookup.Provider provider) {
+    public ItemStack assemble(CraftingInput craftingInput) {
         return ItemStack.EMPTY;
     }
 
     @Override
-    public boolean canCraftInDimensions(int p_43999_, int p_44000_) {
-        return false;
-    }
-
-    @Override
-    public ItemStack getResultItem(HolderLookup.Provider access) {
-        return ItemStack.EMPTY;
-    }
-
-
-    @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<SealInfo> getSerializer() {
         return Seals.EMOJI_RECIPE_SERIALIZER.get();
-    }
-
-    @Override
-    public RecipeType<?> getType() {
-        return Seals.SEAL_RECIPE_TYPE.get();
     }
 
 }
